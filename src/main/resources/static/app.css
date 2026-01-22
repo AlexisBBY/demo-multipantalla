@@ -45,6 +45,7 @@ body{
   gap:10px;
   font-weight:700;
   letter-spacing:.3px;
+  white-space: nowrap;
 }
 
 .logo{
@@ -58,10 +59,12 @@ body{
   font-weight:900;
 }
 
+/* links responsivos */
 .nav-links{
   display:flex;
   gap:10px;
-  flex-wrap:wrap;
+  flex-wrap: wrap;
+  justify-content: flex-end;
 }
 
 .nav-links a{
@@ -70,6 +73,7 @@ body{
   color:var(--muted);
   font-size:14px;
   transition:.15s ease;
+  white-space: nowrap;
 }
 
 .nav-links a:hover{
@@ -137,6 +141,11 @@ label{
   border-color:#fff;
 }
 
+textarea.input{
+  text-align: left;
+  resize: vertical;
+}
+
 .err{
   margin-top:6px;
   font-size:13px;
@@ -154,14 +163,84 @@ label{
   color:#000;
   font-weight:800;
   cursor:pointer;
+  display:inline-flex;
+  justify-content:center;
+  align-items:center;
+  gap:8px;
 }
 
-.btn:hover{
-  opacity:.9;
-}
+.btn:hover{ opacity:.9; }
 
 /* Ajuste reCAPTCHA para centrarlo */
 .g-recaptcha{
   display:flex;
   justify-content:center;
+}
+
+/* Separador opcional (por si lo usas) */
+.sep{
+  border: none;
+  border-top: 1px solid var(--border);
+  margin: 18px 0;
+}
+
+/* ===== RESPONSIVE BREAKPOINTS ===== */
+
+/* Tablets y pantallas medianas */
+@media (max-width: 700px){
+  .nav-inner{
+    padding: 12px 12px;
+  }
+  .card{
+    max-width: 520px;
+    padding: 22px;
+  }
+  .card h1{
+    font-size: 22px;
+  }
+}
+
+/* Celulares */
+@media (max-width: 520px){
+  .nav-inner{
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  /* Si hay muchos links, que no se rompa feo: scroll horizontal suave */
+  .nav-links{
+    width: 100%;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    padding-bottom: 6px;
+    -webkit-overflow-scrolling: touch;
+  }
+  .nav-links::-webkit-scrollbar{
+    height: 6px;
+  }
+  .nav-links::-webkit-scrollbar-thumb{
+    background: rgba(255,255,255,.12);
+    border-radius: 999px;
+  }
+
+  .main{
+    padding: 22px 12px 40px;
+  }
+
+  .card{
+    padding: 18px;
+    border-radius: 16px;
+  }
+
+  .input, .btn{
+    padding: 12px;
+  }
+}
+
+/* Muy chiquito (320px) */
+@media (max-width: 360px){
+  .logo{ width:32px; height:32px; border-radius:9px; }
+  .card h1{ font-size: 20px; }
+  .sub{ font-size: 13px; }
 }
