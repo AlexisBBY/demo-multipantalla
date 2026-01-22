@@ -16,12 +16,8 @@ spring:
       max-file-size: 10MB
       max-request-size: 10MB
 
-recaptcha:
-  site-key: ${RECAPTCHA_SITE_KEY:6LcAgFIsAAAAAK4hBp3QMpKPrI395edVgRod4nEP}
-  secret-key: ${RECAPTCHA_SECRET:6LcAgFIsAAAAAI2qLewcibEh7hEevbyr_Rdkp9nt}
-
 app:
   recaptcha:
     enabled: ${RECAPTCHA_ENABLED:false}
-    secret: ${RECAPTCHA_SECRET:}
     site-key: ${RECAPTCHA_SITE_KEY:}
+    secret: ${RECAPTCHA_SECRET:}
