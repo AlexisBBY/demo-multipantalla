@@ -17,6 +17,7 @@ spring:
       max-request-size: 10MB
 
 app:
+  upload-dir: ${UPLOAD_DIR:/tmp/uploads}
   recaptcha:
     enabled: ${RECAPTCHA_ENABLED:false}
     site-key: ${RECAPTCHA_SITE_KEY:}
