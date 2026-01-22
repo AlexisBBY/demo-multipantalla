@@ -6,35 +6,32 @@
   <link rel="stylesheet" href="/app.css"/>
   <title>Carrusel</title>
 
-  <!-- Estilos del carrusel (si prefieres, pásalos a app.css) -->
+  <!-- Estilos del carrusel (puedes moverlos a app.css si quieres) -->
   <style>
-    .carousel {
-      margin-top: 10px;
-    }
+    .carousel { margin-top: 8px; }
 
-    .slides {
+    .slides { width: 100%; }
+
+    .slide { display: none; }
+
+    .slide-img{
       width: 100%;
-    }
-
-    .slide {
-      display: none;
-    }
-
-    .slide-img {
-      width: 100%;
-      height: 380px;
-      object-fit: contain; /* usa cover si quieres recorte */
+      height: 320px;
+      object-fit: contain; /* cambia a cover si quieres recorte */
       border-radius: 12px;
-      background: rgba(0,0,0,.2);
+      background: #0a0a0a;
+      border: 1px solid rgba(255,255,255,.12);
     }
 
-    .caption {
+    .caption{
       margin-top: 10px;
-      color: rgba(255,255,255,.7);
+      color: rgba(255,255,255,.55);
       font-size: 13px;
+      text-align: center;
+      word-break: break-word;
     }
 
-    .controls {
+    .controls{
       margin-top: 12px;
       display: flex;
       gap: 12px;
@@ -43,26 +40,59 @@
       flex-wrap: wrap;
     }
 
-    .counter {
-      color: rgba(255,255,255,.7);
+    .counter{
+      color: rgba(255,255,255,.55);
       font-size: 14px;
-      min-width: 70px;
+      min-width: 80px;
       text-align: center;
+    }
+
+    .upload-row{
+      display:flex;
+      gap:10px;
+      align-items:center;
+      flex-wrap:wrap;
     }
   </style>
 </head>
 <body>
 
-<div class="container">
-  <div class="topbar">🖼️ Carrusel</div>
+<!-- NAVBAR -->
+<nav class="navbar">
+  <div class="nav-inner">
+    <div class="brand">
+      <div class="logo">A</div>
+      <span>DemoApp</span>
+    </div>
 
+    <div class="nav-links">
+      <a href="/">Inicio</a>
+      <a href="/calculator">Calculadora</a>
+      <a href="/contact">Formulario</a>
+      <a href="/carousel">Carrusel</a>
+      <a href="/hello">Hola</a>
+    </div>
+  </div>
+</nav>
+
+<!-- CONTENIDO CENTRADO -->
+<main class="main">
   <div class="card">
-    <div class="h1">Subir imagen</div>
 
-    <form action="/images/upload"
+    <h1>Carrusel</h1>
+    <p class="sub">Sube imágenes y navega por la galería</p>
+
+    <!-- SUBIR IMAGEN -->
+    <form th:action="@{/images/upload}"
           method="post"
           enctype="multipart/form-data"
-          style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+          class="upload-row">
+
+      <!-- CSRF (si Spring Security está activo) -->
+      <input type="hidden"
+             th:if="${_csrf != null}"
+             th:name="${_csrf.parameterName}"
+             th:value="${_csrf.token}"/>
 
       <input class="input"
              type="file"
@@ -70,18 +100,16 @@
              accept="image/*"
              required />
 
-      <button class="btn primary" type="submit">
-        Subir
-      </button>
+      <button class="btn" type="submit">Subir</button>
     </form>
 
     <hr class="sep"/>
 
-    <div class="h1">Galería</div>
+    <h1 style="font-size:20px; margin-top:0;">Galería</h1>
 
     <!-- Mensaje si no hay imágenes -->
     <div th:if="${#lists.isEmpty(images)}"
-         style="color:rgba(255,255,255,.7);">
+         style="color:rgba(255,255,255,.55); text-align:center; margin-top:10px;">
       No hay imágenes aún
     </div>
 
@@ -94,26 +122,20 @@
           <img th:src="@{'/images/' + ${img.id}}"
                th:alt="${img.originalName}"
                class="slide-img"/>
-
           <div class="caption" th:text="${img.originalName}"></div>
         </div>
       </div>
 
       <!-- Controles -->
       <div class="controls">
-        <button type="button" class="btn" onclick="prevSlide()">⬅ Anterior</button>
+        <button type="button" class="btn" onclick="prevSlide()">Anterior</button>
         <div class="counter" id="counter"></div>
-        <button type="button" class="btn" onclick="nextSlide()">Siguiente ➡</button>
+        <button type="button" class="btn" onclick="nextSlide()">Siguiente</button>
       </div>
-
     </div>
 
   </div>
-
-  <a class="btn wide" href="/">
-    ⬅ Volver
-  </a>
-</div>
+</main>
 
 <script>
   let current = 0;
@@ -140,11 +162,12 @@
   function nextSlide() { showSlide(current + 1); }
   function prevSlide() { showSlide(current - 1); }
 
-  // AUTOPLAY (cada 3 segundos). Si no lo quieres, borra startAuto/stopAuto y sus llamadas.
+  // Autoplay (cada 3s). Si no lo quieres, borra startAuto/stopAuto y sus llamadas.
   function startAuto() {
     stopAuto();
     timer = setInterval(() => nextSlide(), 3000);
   }
+
   function stopAuto() {
     if (timer) clearInterval(timer);
     timer = null;
@@ -154,14 +177,14 @@
     showSlide(0);
     startAuto();
 
-    // Pausa al pasar el mouse por encima del carrusel
+    // Pausa al pasar el mouse encima
     const car = document.querySelector('.carousel');
     if (car) {
       car.addEventListener('mouseenter', stopAuto);
       car.addEventListener('mouseleave', startAuto);
     }
 
-    // Teclado: flechas izquierda/derecha
+    // Flechas del teclado
     document.addEventListener('keydown', (e) => {
       if (e.key === 'ArrowLeft') prevSlide();
       if (e.key === 'ArrowRight') nextSlide();

@@ -6,108 +6,68 @@
   <link rel="stylesheet" href="/app.css"/>
   <title>Inicio</title>
 
-  <!-- reCAPTCHA (solo se usa si está habilitado) -->
-  <script src="https://www.google.com/recaptcha/api.js" async defer
+  <!-- reCAPTCHA (solo si está habilitado) -->
+  <script src="https://www.google.com/recaptcha/api.js"
+          async defer
           th:if="${recaptchaEnabled}"></script>
 </head>
-
 <body>
-<div class="container">
-  <div class="topbar">🏠 Inicio</div>
 
-  <div class="grid2">
-    <!-- REGISTRO -->
-    <div class="card">
-      <div class="h1">Registro Seguro</div>
-      <p class="sub">Ingresa los datos solicitados para continuar.</p>
-
-      <form th:action="@{/register}" th:object="${registrationForm}" method="post">
-
-        <div class="row">
-          <label>Dato a insertar <span style="color:#ff7aa2">*</span></label>
-          <input class="input" th:field="*{username}" placeholder="Ej: Nombre de usuario"/>
-          <div class="err"
-               th:if="${#fields.hasErrors('username')}"
-               th:errors="*{username}">
-          </div>
-        </div>
-
-        <!-- reCAPTCHA (solo si está habilitado) -->
-        <div class="row" style="margin-top:16px;"
-             th:if="${recaptchaEnabled}">
-
-          <div class="g-recaptcha"
-               th:attr="data-sitekey=${recaptchaSiteKey}">
-          </div>
-
-          <div class="err"
-               th:if="${recaptchaError}"
-               th:text="${recaptchaError}">
-          </div>
-        </div>
-
-        <div class="row">
-          <button class="btn primary wide" type="submit">
-            Guardar en Base de Datos
-          </button>
-        </div>
-
-      </form>
+<!-- NAVBAR ARRIBA -->
+<nav class="navbar">
+  <div class="nav-inner">
+    <div class="brand">
+      <div class="logo">A</div>
+      <span>DemoApp</span>
     </div>
 
-    <!-- FUNCIONES -->
-    <div class="card">
-      <div class="h1">Explorar Funcionalidades</div>
-      <p class="sub">Selecciona una opción.</p>
-
-      <a class="feature" href="/calculator">
-        <div>
-          <b>Calculadora</b>
-          <small>Suma y divide números</small>
-        </div>
-        ➜
-      </a>
-
-      <a class="feature" href="/contact">
-        <div>
-          <b>Formulario</b>
-          <small>Con validación de campos</small>
-        </div>
-        ➜
-      </a>
-
-      <a class="feature" href="/carousel">
-        <div>
-          <b>Carrusel</b>
-          <small>Galería con imágenes del usuario</small>
-        </div>
-        ➜
-      </a>
-
-      <a class="feature" href="/hello">
-        <div>
-          <b>Hola Mundo</b>
-          <small>Página de bienvenida</small>
-        </div>
-        ➜
-      </a>
-
-      <hr class="sep"/>
-
-      <div class="center"
-           style="color:rgba(255,255,255,.65); margin-bottom:10px;">
-        Herramientas de Desarrollo
-      </div>
-
-      <a class="btn danger wide" href="/dev/boom">
-        Mostrar Pantalla de Error
-      </a>
-
-      <p style="color:rgba(255,255,255,.55); font-size:13px; margin-top:10px;">
-        Este botón dispara un error intencional para probar la pantalla de error.
-      </p>
+    <div class="nav-links">
+      <a href="/">Inicio</a>
+      <a href="/calculator">Calculadora</a>
+      <a href="/contact">Formulario</a>
+      <a href="/carousel">Carrusel</a>
+      <a href="/hello">Hola</a>
     </div>
   </div>
-</div>
+</nav>
+
+<!-- CONTENIDO CENTRADO -->
+<main class="main">
+  <div class="card">
+
+    <h1>Registro</h1>
+    <p class="sub">Guarda un dato en la base de datos</p>
+
+    <form th:action="@{/register}"
+          th:object="${registrationForm}"
+          method="post">
+
+      <div class="row">
+        <label>Dato a insertar</label>
+        <input class="input"
+               th:field="*{username}"
+               placeholder="Ej. nombre de usuario"/>
+
+        <div class="err"
+             th:if="${#fields.hasErrors('username')}"
+             th:errors="*{username}"></div>
+      </div>
+
+      <!-- reCAPTCHA -->
+      <div class="row" th:if="${recaptchaEnabled}">
+        <div class="g-recaptcha"
+             th:attr="data-sitekey=${recaptchaSiteKey}"></div>
+
+        <div class="err"
+             th:if="${recaptchaError}"
+             th:text="${recaptchaError}"></div>
+      </div>
+
+      <button class="btn" type="submit">Guardar</button>
+    </form>
+
+  </div>
+</main>
+
 </body>
 </html>

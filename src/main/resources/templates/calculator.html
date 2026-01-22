@@ -7,14 +7,39 @@
   <title>Calculadora</title>
 </head>
 <body>
-<div class="container">
-  <div class="topbar">🏠 <a href="/" style="color:inherit;text-decoration:none;">Inicio</a> › Calculadora</div>
 
-  <div class="card" style="max-width:720px; margin:0 auto;">
-    <div class="h1">Calculadora</div>
+<!-- NAVBAR ARRIBA -->
+<nav class="navbar">
+  <div class="nav-inner">
+    <div class="brand">
+      <div class="logo">A</div>
+      <span>DemoApp</span>
+    </div>
+
+    <div class="nav-links">
+      <a href="/">Inicio</a>
+      <a href="/calculator">Calculadora</a>
+      <a href="/contact">Formulario</a>
+      <a href="/carousel">Carrusel</a>
+      <a href="/hello">Hola</a>
+    </div>
+  </div>
+</nav>
+
+<!-- CONTENIDO CENTRADO -->
+<main class="main">
+  <div class="card">
+
+    <h1>Calculadora</h1>
     <p class="sub">Suma y división de números</p>
 
     <form method="post" th:action="@{/calculator/sum}">
+      <!-- CSRF (si Spring Security está activo) -->
+      <input type="hidden"
+             th:if="${_csrf != null}"
+             th:name="${_csrf.parameterName}"
+             th:value="${_csrf.token}"/>
+
       <div class="row">
         <label>Primer número</label>
         <input class="input" name="a" th:value="${a}" placeholder="Ej: 10"/>
@@ -25,25 +50,41 @@
         <input class="input" name="b" th:value="${b}" placeholder="Ej: 5"/>
       </div>
 
-      <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:14px;">
-        <button class="btn primary" type="submit" formaction="/calculator/sum">＋ Sumar</button>
-        <button class="btn danger" type="submit" formaction="/calculator/divide">÷ Dividir</button>
+      <!-- BOTONES -->
+      <div class="row" style="display:flex; gap:10px; margin-top:14px;">
+        <button class="btn"
+                type="submit"
+                th:formaction="@{/calculator/sum}">
+          Sumar
+        </button>
+
+        <button class="btn"
+                type="submit"
+                th:formaction="@{/calculator/divide}">
+          Dividir
+        </button>
       </div>
 
-      <div class="row" style="margin-top:14px;">
-        <button class="btn wide" type="submit" formaction="/calculator/clear">⟲ Limpiar todo</button>
+      <div class="row" style="margin-top:12px;">
+        <button class="btn"
+                type="submit"
+                th:formaction="@{/calculator/clear}">
+          Limpiar
+        </button>
       </div>
     </form>
 
-    <div th:if="${error}" class="err" style="margin-top:10px;" th:text="${error}"></div>
+    <!-- ERROR -->
+    <div th:if="${error}" class="err" th:text="${error}"></div>
 
-    <div th:if="${result != null}" style="margin-top:14px; padding:14px; border-radius:16px; background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.12);">
+    <!-- RESULTADO -->
+    <div th:if="${result != null}"
+         style="margin-top:14px; padding:14px; border-radius:14px; border:1px solid rgba(255,255,255,.12); background:#0a0a0a; text-align:center;">
       <b>Resultado:</b> <span th:text="${result}"></span>
     </div>
 
-    <hr class="sep"/>
-    <div class="center"><a class="btn" href="/">← Volver al Inicio</a></div>
   </div>
-</div>
+</main>
+
 </body>
 </html>

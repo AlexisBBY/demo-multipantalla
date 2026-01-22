@@ -7,14 +7,46 @@
   <title>Error</title>
 </head>
 <body>
-<div class="container">
-  <div class="card" style="max-width:720px; margin: 40px auto; text-align:center;">
-    <div style="font-size:58px; opacity:.25;" th:text="${status}">500</div>
-    <div class="h1">Ocurrió un error inesperado</div>
-    <p class="sub">Algo salió mal al procesar tu solicitud.</p>
-    <a class="btn primary wide" href="/">Volver al Inicio</a>
+
+<!-- NAVBAR -->
+<nav class="navbar">
+  <div class="nav-inner">
+    <div class="brand">
+      <div class="logo">A</div>
+      <span>DemoApp</span>
+    </div>
+
+    <div class="nav-links">
+      <a href="/">Inicio</a>
+      <a href="/calculator">Calculadora</a>
+      <a href="/contact">Formulario</a>
+      <a href="/carousel">Carrusel</a>
+      <a href="/hello">Hola</a>
+    </div>
   </div>
-</div>
+</nav>
+
+<!-- CONTENIDO CENTRADO -->
+<main class="main">
+  <div class="card" style="text-align:center;">
+
+    <div style="font-size:64px; opacity:.25; font-weight:900; margin-bottom:6px;"
+         th:text="${status}">500</div>
+
+    <h1 style="margin:0;">Ocurrió un error</h1>
+    <p class="sub" style="margin-top:10px;">
+      Algo salió mal al procesar tu solicitud.
+    </p>
+
+    <!-- Mensaje extra si viene disponible -->
+    <div th:if="${error}"
+         style="color:rgba(255,255,255,.55); font-size:13px; margin: 10px 0 18px;"
+         th:text="${error}"></div>
+
+    <a class="btn" href="/">Volver al Inicio</a>
+
+  </div>
+</main>
+
 </body>
 </html>
-
