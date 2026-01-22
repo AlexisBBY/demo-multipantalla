@@ -1,0 +1,60 @@
+<!doctype html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <link rel="stylesheet" href="/app.css"/>
+  <title>Formulario</title>
+</head>
+<body>
+<div class="container">
+  <div class="topbar">🏠 <a href="/" style="color:inherit;text-decoration:none;">Inicio</a> › Formulario</div>
+
+  <div class="card" style="max-width:720px; margin:0 auto;">
+    <div class="h1">Formulario de Contacto</div>
+    <p class="sub">Todos los campos son obligatorios</p>
+
+    <div th:if="${param.sent}" class="badge">✅ Enviado y guardado</div>
+
+    <form th:action="@{/contact}" th:object="${contactForm}" method="post">
+      <div class="row">
+        <label>Nombre completo *</label>
+        <input class="input" th:field="*{fullName}" placeholder="Juan Pérez"/>
+        <div class="err" th:if="${#fields.hasErrors('fullName')}" th:errors="*{fullName}"></div>
+      </div>
+
+      <div class="row">
+        <label>Correo electrónico *</label>
+        <input class="input" th:field="*{email}" placeholder="juan@ejemplo.com"/>
+        <div class="err" th:if="${#fields.hasErrors('email')}" th:errors="*{email}"></div>
+      </div>
+
+      <div class="row">
+        <label>Teléfono *</label>
+        <input class="input" th:field="*{phone}" placeholder="5512345678"/>
+        <div class="err" th:if="${#fields.hasErrors('phone')}" th:errors="*{phone}"></div>
+      </div>
+
+      <div class="row">
+        <label>Fecha de nacimiento *</label>
+        <input class="input" type="date" th:field="*{birthDate}"/>
+        <div class="err" th:if="${#fields.hasErrors('birthDate')}" th:errors="*{birthDate}"></div>
+      </div>
+
+      <div class="row">
+        <label>Mensaje *</label>
+        <textarea class="input" th:field="*{message}" rows="5" placeholder="Escribe tu mensaje aquí..."></textarea>
+        <div class="err" th:if="${#fields.hasErrors('message')}" th:errors="*{message}"></div>
+      </div>
+
+      <div class="row">
+        <button class="btn primary wide" type="submit">✈ Enviar Formulario</button>
+      </div>
+    </form>
+
+    <hr class="sep"/>
+    <div class="center"><a class="btn" href="/">← Volver al Inicio</a></div>
+  </div>
+</div>
+</body>
+</html>

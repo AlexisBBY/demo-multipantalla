@@ -1,0 +1,32 @@
+<!doctype html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <link rel="stylesheet" href="/app.css"/>
+  <title>Funcionalidades</title>
+</head>
+<body>
+<div class="container">
+  <div class="topbar">🏠 <a href="/" style="color:inherit;text-decoration:none;">Inicio</a> › Funcionalidades</div>
+
+  <div class="card">
+    <div style="display:flex; align-items:center; justify-content:space-between; gap:12px;">
+      <div>
+        <div class="h1" style="margin-bottom:0;">Explorar</div>
+        <p class="sub">Accede a cada ventana.</p>
+      </div>
+      <span th:if="${registered}" class="badge">✅ Registro guardado</span>
+    </div>
+
+    <a class="feature" href="/calculator"><div><b>Calculadora</b><small>Suma y división</small></div>➜</a>
+    <a class="feature" href="/contact"><div><b>Formulario</b><small>Validaciones</small></div>➜</a>
+    <a class="feature" href="/carousel"><div><b>Carrusel</b><small>5 imágenes</small></div>➜</a>
+    <a class="feature" href="/hello"><div><b>Hola Mundo</b><small>Bienvenida</small></div>➜</a>
+
+    <hr class="sep"/>
+    <a class="btn" href="/">← Volver al Inicio</a>
+  </div>
+</div>
+</body>
+</html>

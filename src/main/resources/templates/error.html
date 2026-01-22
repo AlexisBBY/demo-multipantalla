@@ -1,0 +1,20 @@
+<!doctype html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <link rel="stylesheet" href="/app.css"/>
+  <title>Error</title>
+</head>
+<body>
+<div class="container">
+  <div class="card" style="max-width:720px; margin: 40px auto; text-align:center;">
+    <div style="font-size:58px; opacity:.25;" th:text="${status}">500</div>
+    <div class="h1">Ocurrió un error inesperado</div>
+    <p class="sub">Algo salió mal al procesar tu solicitud.</p>
+    <a class="btn primary wide" href="/">Volver al Inicio</a>
+  </div>
+</div>
+</body>
+</html>
+

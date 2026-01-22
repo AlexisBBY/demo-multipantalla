@@ -1,0 +1,173 @@
+<!doctype html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <link rel="stylesheet" href="/app.css"/>
+  <title>Carrusel</title>
+
+  <!-- Estilos del carrusel (si prefieres, pásalos a app.css) -->
+  <style>
+    .carousel {
+      margin-top: 10px;
+    }
+
+    .slides {
+      width: 100%;
+    }
+
+    .slide {
+      display: none;
+    }
+
+    .slide-img {
+      width: 100%;
+      height: 380px;
+      object-fit: contain; /* usa cover si quieres recorte */
+      border-radius: 12px;
+      background: rgba(0,0,0,.2);
+    }
+
+    .caption {
+      margin-top: 10px;
+      color: rgba(255,255,255,.7);
+      font-size: 13px;
+    }
+
+    .controls {
+      margin-top: 12px;
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    .counter {
+      color: rgba(255,255,255,.7);
+      font-size: 14px;
+      min-width: 70px;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <div class="topbar">🖼️ Carrusel</div>
+
+  <div class="card">
+    <div class="h1">Subir imagen</div>
+
+    <form action="/images/upload"
+          method="post"
+          enctype="multipart/form-data"
+          style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+
+      <input class="input"
+             type="file"
+             name="file"
+             accept="image/*"
+             required />
+
+      <button class="btn primary" type="submit">
+        Subir
+      </button>
+    </form>
+
+    <hr class="sep"/>
+
+    <div class="h1">Galería</div>
+
+    <!-- Mensaje si no hay imágenes -->
+    <div th:if="${#lists.isEmpty(images)}"
+         style="color:rgba(255,255,255,.7);">
+      No hay imágenes aún
+    </div>
+
+    <!-- Carrusel -->
+    <div th:if="${!#lists.isEmpty(images)}" class="carousel">
+
+      <!-- Slides -->
+      <div class="slides">
+        <div class="slide" th:each="img, stat : ${images}" th:attr="data-index=${stat.index}">
+          <img th:src="@{'/images/' + ${img.id}}"
+               th:alt="${img.originalName}"
+               class="slide-img"/>
+
+          <div class="caption" th:text="${img.originalName}"></div>
+        </div>
+      </div>
+
+      <!-- Controles -->
+      <div class="controls">
+        <button type="button" class="btn" onclick="prevSlide()">⬅ Anterior</button>
+        <div class="counter" id="counter"></div>
+        <button type="button" class="btn" onclick="nextSlide()">Siguiente ➡</button>
+      </div>
+
+    </div>
+
+  </div>
+
+  <a class="btn wide" href="/">
+    ⬅ Volver
+  </a>
+</div>
+
+<script>
+  let current = 0;
+  let timer = null;
+
+  function slides() {
+    return document.querySelectorAll('.slide');
+  }
+
+  function showSlide(i) {
+    const s = slides();
+    if (!s.length) return;
+
+    current = (i + s.length) % s.length;
+
+    s.forEach((el, idx) => {
+      el.style.display = (idx === current) ? 'block' : 'none';
+    });
+
+    const counter = document.getElementById('counter');
+    if (counter) counter.textContent = (current + 1) + " / " + s.length;
+  }
+
+  function nextSlide() { showSlide(current + 1); }
+  function prevSlide() { showSlide(current - 1); }
+
+  // AUTOPLAY (cada 3 segundos). Si no lo quieres, borra startAuto/stopAuto y sus llamadas.
+  function startAuto() {
+    stopAuto();
+    timer = setInterval(() => nextSlide(), 3000);
+  }
+  function stopAuto() {
+    if (timer) clearInterval(timer);
+    timer = null;
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    showSlide(0);
+    startAuto();
+
+    // Pausa al pasar el mouse por encima del carrusel
+    const car = document.querySelector('.carousel');
+    if (car) {
+      car.addEventListener('mouseenter', stopAuto);
+      car.addEventListener('mouseleave', startAuto);
+    }
+
+    // Teclado: flechas izquierda/derecha
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowLeft') prevSlide();
+      if (e.key === 'ArrowRight') nextSlide();
+    });
+  });
+</script>
+
+</body>
+</html>
