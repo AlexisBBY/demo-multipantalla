@@ -6,9 +6,11 @@
   <link rel="stylesheet" href="/app.css"/>
   <title>Inicio</title>
 
-  <!-- reCAPTCHA -->
-  <script src="https://www.google.com/recaptcha/api.js" async defer></script>
+  <!-- reCAPTCHA (solo se usa si está habilitado) -->
+  <script src="https://www.google.com/recaptcha/api.js" async defer
+          th:if="${recaptchaEnabled}"></script>
 </head>
+
 <body>
 <div class="container">
   <div class="topbar">🏠 Inicio</div>
@@ -24,16 +26,24 @@
         <div class="row">
           <label>Dato a insertar <span style="color:#ff7aa2">*</span></label>
           <input class="input" th:field="*{username}" placeholder="Ej: Nombre de usuario"/>
-          <div class="err" th:if="${#fields.hasErrors('username')}" th:errors="*{username}"></div>
+          <div class="err"
+               th:if="${#fields.hasErrors('username')}"
+               th:errors="*{username}">
+          </div>
         </div>
 
-        <!-- reCAPTCHA REAL -->
-        <div class="row" style="margin-top:16px;">
+        <!-- reCAPTCHA (solo si está habilitado) -->
+        <div class="row" style="margin-top:16px;"
+             th:if="${recaptchaEnabled}">
+
           <div class="g-recaptcha"
-               th:attr="data-sitekey=${@environment.getProperty('app.recaptcha.site-key')}">
+               th:attr="data-sitekey=${recaptchaSiteKey}">
           </div>
 
-          <div class="err" th:if="${recaptchaError}" th:text="${recaptchaError}"></div>
+          <div class="err"
+               th:if="${recaptchaError}"
+               th:text="${recaptchaError}">
+          </div>
         </div>
 
         <div class="row">
@@ -41,6 +51,7 @@
             Guardar en Base de Datos
           </button>
         </div>
+
       </form>
     </div>
 
@@ -82,11 +93,16 @@
       </a>
 
       <hr class="sep"/>
-      <div class="center" style="color:rgba(255,255,255,.65); margin-bottom:10px;">
+
+      <div class="center"
+           style="color:rgba(255,255,255,.65); margin-bottom:10px;">
         Herramientas de Desarrollo
       </div>
 
-      <a class="btn danger wide" href="/dev/boom">Mostrar Pantalla de Error</a>
+      <a class="btn danger wide" href="/dev/boom">
+        Mostrar Pantalla de Error
+      </a>
+
       <p style="color:rgba(255,255,255,.55); font-size:13px; margin-top:10px;">
         Este botón dispara un error intencional para probar la pantalla de error.
       </p>

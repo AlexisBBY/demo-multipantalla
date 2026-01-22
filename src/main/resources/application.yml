@@ -1,4 +1,10 @@
+server:
+  port: ${PORT:8080}
+
 spring:
+  thymeleaf:
+    cache: false
+
   datasource:
     url: ${DB_URL:jdbc:postgresql://localhost:5432/demoapp}
     username: ${DB_USER:postgres}
@@ -7,6 +13,9 @@ spring:
   jpa:
     hibernate:
       ddl-auto: validate
+    properties:
+      hibernate:
+        format_sql: true
 
   flyway:
     enabled: true
@@ -18,6 +27,7 @@ spring:
 
 app:
   upload-dir: ${UPLOAD_DIR:/tmp/uploads}
+
   recaptcha:
     enabled: ${RECAPTCHA_ENABLED:false}
     site-key: ${RECAPTCHA_SITE_KEY:}

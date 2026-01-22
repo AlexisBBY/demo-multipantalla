@@ -7,11 +7,13 @@ import org.springframework.web.client.RestTemplate
 
 @Service
 class RecaptchaService(
-    @Value("\${recaptcha.secret-key}") private val secret: String
+    // Lee desde app.recaptcha.secret y si no existe, usa ""
+    @Value("\${app.recaptcha.secret:}") private val secret: String
 ) {
     private val rest = RestTemplate()
 
     fun verify(token: String, remoteIp: String?): Boolean {
+        // Si no hay secret o no hay token, no pasa
         if (secret.isBlank()) return false
         if (token.isBlank()) return false
 

@@ -18,12 +18,18 @@ import org.springframework.web.bind.annotation.PostMapping
 class HomeController(
     private val registrationRepo: RegistrationRepo,
     private val recaptchaService: RecaptchaService,
-    @Value("\${recaptcha.site-key}") private val recaptchaSiteKey: String
+
+    // Si no existe, default false
+    @Value("\${app.recaptcha.enabled:false}") private val recaptchaEnabled: Boolean,
+
+    // Si no existe, default ""
+    @Value("\${app.recaptcha.site-key:}") private val recaptchaSiteKey: String
 ) {
 
     @GetMapping("/")
     fun home(model: Model): String {
         model.addAttribute("registrationForm", RegistrationForm())
+        model.addAttribute("recaptchaEnabled", recaptchaEnabled)
         model.addAttribute("recaptchaSiteKey", recaptchaSiteKey)
         return "home"
     }
@@ -38,18 +44,22 @@ class HomeController(
 
         // 1) Validación del form
         if (binding.hasErrors()) {
+            model.addAttribute("recaptchaEnabled", recaptchaEnabled)
             model.addAttribute("recaptchaSiteKey", recaptchaSiteKey)
             return "home"
         }
 
-        // 2) Validación reCAPTCHA
-        val token = request.getParameter("g-recaptcha-response") ?: ""
-        val ok = recaptchaService.verify(token, request.remoteAddr)
+        // 2) Validación reCAPTCHA (solo si está habilitado)
+        if (recaptchaEnabled) {
+            val token = request.getParameter("g-recaptcha-response") ?: ""
+            val ok = recaptchaService.verify(token, request.remoteAddr)
 
-        if (!ok) {
-            model.addAttribute("recaptchaSiteKey", recaptchaSiteKey)
-            model.addAttribute("recaptchaError", "Completa el reCAPTCHA correctamente.")
-            return "home"
+            if (!ok) {
+                model.addAttribute("recaptchaEnabled", recaptchaEnabled)
+                model.addAttribute("recaptchaSiteKey", recaptchaSiteKey)
+                model.addAttribute("recaptchaError", "Completa el reCAPTCHA correctamente.")
+                return "home"
+            }
         }
 
         // 3) Guardar en DB
@@ -57,6 +67,6 @@ class HomeController(
             Registration(username = form.username.trim())
         )
 
-        return "redirect:/features" // o a donde estés mandando
+        return "redirect:/features"
     }
 }
