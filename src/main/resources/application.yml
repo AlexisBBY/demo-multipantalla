@@ -21,4 +21,7 @@ recaptcha:
   secret-key: ${RECAPTCHA_SECRET:6LcAgFIsAAAAAI2qLewcibEh7hEevbyr_Rdkp9nt}
 
 app:
-  upload-dir: ${UPLOAD_DIR:./uploads}
+  recaptcha:
+    enabled: ${RECAPTCHA_ENABLED:false}
+    secret: ${RECAPTCHA_SECRET:}
+    site-key: ${RECAPTCHA_SITE_KEY:}

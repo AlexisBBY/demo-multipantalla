@@ -30,8 +30,9 @@
         <!-- reCAPTCHA REAL -->
         <div class="row" style="margin-top:16px;">
           <div class="g-recaptcha"
-               th:attr="data-sitekey=${@environment.getProperty('recaptcha.site-key')}">
+               th:attr="data-sitekey=${@environment.getProperty('app.recaptcha.site-key')}">
           </div>
+
           <div class="err" th:if="${recaptchaError}" th:text="${recaptchaError}"></div>
         </div>
 
