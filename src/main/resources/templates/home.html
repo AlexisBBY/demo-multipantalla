@@ -6,14 +6,12 @@
   <link rel="stylesheet" href="/app.css"/>
   <title>Inicio</title>
 
-  <!-- reCAPTCHA (solo si está habilitado) -->
   <script src="https://www.google.com/recaptcha/api.js"
           async defer
           th:if="${recaptchaEnabled}"></script>
 </head>
 <body>
 
-<!-- NAVBAR ARRIBA -->
 <nav class="navbar">
   <div class="nav-inner">
     <div class="brand">
@@ -23,6 +21,7 @@
 
     <div class="nav-links">
       <a href="/">Inicio</a>
+      <a href="/features">Explorar</a>
       <a href="/calculator">Calculadora</a>
       <a href="/contact">Formulario</a>
       <a href="/carousel">Carrusel</a>
@@ -31,36 +30,36 @@
   </div>
 </nav>
 
-<!-- CONTENIDO CENTRADO -->
+<!-- BREADCRUMBS -->
+<div class="crumbs">
+  <div class="trail">
+    <a href="/">Inicio</a>
+    <span class="sep">›</span>
+    <span class="current">Registro</span>
+  </div>
+</div>
+
 <main class="main">
   <div class="card">
 
     <h1>Registro</h1>
     <p class="sub">Guarda un dato en la base de datos</p>
 
-    <form th:action="@{/register}"
-          th:object="${registrationForm}"
-          method="post">
+    <form th:action="@{/register}" th:object="${registrationForm}" method="post">
+      <input type="hidden"
+             th:if="${_csrf != null}"
+             th:name="${_csrf.parameterName}"
+             th:value="${_csrf.token}"/>
 
       <div class="row">
         <label>Dato a insertar</label>
-        <input class="input"
-               th:field="*{username}"
-               placeholder="Ej. nombre de usuario"/>
-
-        <div class="err"
-             th:if="${#fields.hasErrors('username')}"
-             th:errors="*{username}"></div>
+        <input class="input" th:field="*{username}" placeholder="Ej. nombre de usuario"/>
+        <div class="err" th:if="${#fields.hasErrors('username')}" th:errors="*{username}"></div>
       </div>
 
-      <!-- reCAPTCHA -->
       <div class="row" th:if="${recaptchaEnabled}">
-        <div class="g-recaptcha"
-             th:attr="data-sitekey=${recaptchaSiteKey}"></div>
-
-        <div class="err"
-             th:if="${recaptchaError}"
-             th:text="${recaptchaError}"></div>
+        <div class="g-recaptcha" th:attr="data-sitekey=${recaptchaSiteKey}"></div>
+        <div class="err" th:if="${recaptchaError}" th:text="${recaptchaError}"></div>
       </div>
 
       <button class="btn" type="submit">Guardar</button>

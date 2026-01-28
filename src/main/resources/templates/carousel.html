@@ -6,18 +6,15 @@
   <link rel="stylesheet" href="/app.css"/>
   <title>Carrusel</title>
 
-  <!-- Estilos del carrusel (puedes moverlos a app.css si quieres) -->
   <style>
     .carousel { margin-top: 8px; }
-
     .slides { width: 100%; }
-
     .slide { display: none; }
 
     .slide-img{
       width: 100%;
       height: 320px;
-      object-fit: contain; /* cambia a cover si quieres recorte */
+      object-fit: contain;
       border-radius: 12px;
       background: #0a0a0a;
       border: 1px solid rgba(255,255,255,.12);
@@ -57,7 +54,6 @@
 </head>
 <body>
 
-<!-- NAVBAR -->
 <nav class="navbar">
   <div class="nav-inner">
     <div class="brand">
@@ -67,6 +63,7 @@
 
     <div class="nav-links">
       <a href="/">Inicio</a>
+      <a href="/features">Explorar</a>
       <a href="/calculator">Calculadora</a>
       <a href="/contact">Formulario</a>
       <a href="/carousel">Carrusel</a>
@@ -75,31 +72,33 @@
   </div>
 </nav>
 
-<!-- CONTENIDO CENTRADO -->
+<div class="crumbs">
+  <div class="trail">
+    <a href="/">Inicio</a>
+    <span class="sep">›</span>
+    <a href="/features">Explorar</a>
+    <span class="sep">›</span>
+    <span class="current">Carrusel</span>
+  </div>
+</div>
+
 <main class="main">
   <div class="card">
 
     <h1>Carrusel</h1>
     <p class="sub">Sube imágenes y navega por la galería</p>
 
-    <!-- SUBIR IMAGEN -->
     <form th:action="@{/images/upload}"
           method="post"
           enctype="multipart/form-data"
           class="upload-row">
 
-      <!-- CSRF (si Spring Security está activo) -->
       <input type="hidden"
              th:if="${_csrf != null}"
              th:name="${_csrf.parameterName}"
              th:value="${_csrf.token}"/>
 
-      <input class="input"
-             type="file"
-             name="file"
-             accept="image/*"
-             required />
-
+      <input class="input" type="file" name="file" accept="image/*" required />
       <button class="btn" type="submit">Subir</button>
     </form>
 
@@ -107,16 +106,12 @@
 
     <h1 style="font-size:20px; margin-top:0;">Galería</h1>
 
-    <!-- Mensaje si no hay imágenes -->
     <div th:if="${#lists.isEmpty(images)}"
          style="color:rgba(255,255,255,.55); text-align:center; margin-top:10px;">
       No hay imágenes aún
     </div>
 
-    <!-- Carrusel -->
     <div th:if="${!#lists.isEmpty(images)}" class="carousel">
-
-      <!-- Slides -->
       <div class="slides">
         <div class="slide" th:each="img, stat : ${images}" th:attr="data-index=${stat.index}">
           <img th:src="@{'/images/' + ${img.id}}"
@@ -126,7 +121,6 @@
         </div>
       </div>
 
-      <!-- Controles -->
       <div class="controls">
         <button type="button" class="btn" onclick="prevSlide()">Anterior</button>
         <div class="counter" id="counter"></div>
@@ -141,34 +135,27 @@
   let current = 0;
   let timer = null;
 
-  function slides() {
-    return document.querySelectorAll('.slide');
-  }
+  function slides() { return document.querySelectorAll('.slide'); }
 
   function showSlide(i) {
     const s = slides();
     if (!s.length) return;
 
     current = (i + s.length) % s.length;
-
-    s.forEach((el, idx) => {
-      el.style.display = (idx === current) ? 'block' : 'none';
-    });
+    s.forEach((el, idx) => el.style.display = (idx === current) ? 'block' : 'none');
 
     const counter = document.getElementById('counter');
     if (counter) counter.textContent = (current + 1) + " / " + s.length;
   }
 
-  function nextSlide() { showSlide(current + 1); }
-  function prevSlide() { showSlide(current - 1); }
+  function nextSlide(){ showSlide(current + 1); }
+  function prevSlide(){ showSlide(current - 1); }
 
-  // Autoplay (cada 3s). Si no lo quieres, borra startAuto/stopAuto y sus llamadas.
-  function startAuto() {
+  function startAuto(){
     stopAuto();
     timer = setInterval(() => nextSlide(), 3000);
   }
-
-  function stopAuto() {
+  function stopAuto(){
     if (timer) clearInterval(timer);
     timer = null;
   }
@@ -177,14 +164,12 @@
     showSlide(0);
     startAuto();
 
-    // Pausa al pasar el mouse encima
     const car = document.querySelector('.carousel');
     if (car) {
       car.addEventListener('mouseenter', stopAuto);
       car.addEventListener('mouseleave', startAuto);
     }
 
-    // Flechas del teclado
     document.addEventListener('keydown', (e) => {
       if (e.key === 'ArrowLeft') prevSlide();
       if (e.key === 'ArrowRight') nextSlide();

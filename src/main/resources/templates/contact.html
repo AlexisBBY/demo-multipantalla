@@ -8,7 +8,6 @@
 </head>
 <body>
 
-<!-- NAVBAR -->
 <nav class="navbar">
   <div class="nav-inner">
     <div class="brand">
@@ -18,6 +17,7 @@
 
     <div class="nav-links">
       <a href="/">Inicio</a>
+      <a href="/features">Explorar</a>
       <a href="/calculator">Calculadora</a>
       <a href="/contact">Formulario</a>
       <a href="/carousel">Carrusel</a>
@@ -26,24 +26,28 @@
   </div>
 </nav>
 
-<!-- CONTENIDO CENTRADO -->
+<div class="crumbs">
+  <div class="trail">
+    <a href="/">Inicio</a>
+    <span class="sep">›</span>
+    <a href="/features">Explorar</a>
+    <span class="sep">›</span>
+    <span class="current">Formulario</span>
+  </div>
+</div>
+
 <main class="main">
   <div class="card">
 
-    <h1>Formulario de Contacto</h1>
+    <h1>Formulario</h1>
     <p class="sub">Todos los campos son obligatorios</p>
 
-    <!-- MENSAJE ENVIADO -->
     <div th:if="${param.sent}"
          style="text-align:center; margin-bottom:16px; color:#7dff9a;">
       ✓ Enviado y guardado
     </div>
 
-    <form th:action="@{/contact}"
-          th:object="${contactForm}"
-          method="post">
-
-      <!-- CSRF -->
+    <form th:action="@{/contact}" th:object="${contactForm}" method="post">
       <input type="hidden"
              th:if="${_csrf != null}"
              th:name="${_csrf.parameterName}"
@@ -51,58 +55,35 @@
 
       <div class="row">
         <label>Nombre completo</label>
-        <input class="input"
-               th:field="*{fullName}"
-               placeholder="Juan Pérez"/>
-        <div class="err"
-             th:if="${#fields.hasErrors('fullName')}"
-             th:errors="*{fullName}"></div>
+        <input class="input" th:field="*{fullName}" placeholder="Juan Pérez"/>
+        <div class="err" th:if="${#fields.hasErrors('fullName')}" th:errors="*{fullName}"></div>
       </div>
 
       <div class="row">
         <label>Correo electrónico</label>
-        <input class="input"
-               th:field="*{email}"
-               placeholder="juan@ejemplo.com"/>
-        <div class="err"
-             th:if="${#fields.hasErrors('email')}"
-             th:errors="*{email}"></div>
+        <input class="input" th:field="*{email}" placeholder="juan@ejemplo.com"/>
+        <div class="err" th:if="${#fields.hasErrors('email')}" th:errors="*{email}"></div>
       </div>
 
       <div class="row">
         <label>Teléfono</label>
-        <input class="input"
-               th:field="*{phone}"
-               placeholder="5512345678"/>
-        <div class="err"
-             th:if="${#fields.hasErrors('phone')}"
-             th:errors="*{phone}"></div>
+        <input class="input" th:field="*{phone}" placeholder="5512345678"/>
+        <div class="err" th:if="${#fields.hasErrors('phone')}" th:errors="*{phone}"></div>
       </div>
 
       <div class="row">
         <label>Fecha de nacimiento</label>
-        <input class="input"
-               type="date"
-               th:field="*{birthDate}"/>
-        <div class="err"
-             th:if="${#fields.hasErrors('birthDate')}"
-             th:errors="*{birthDate}"></div>
+        <input class="input" type="date" th:field="*{birthDate}"/>
+        <div class="err" th:if="${#fields.hasErrors('birthDate')}" th:errors="*{birthDate}"></div>
       </div>
 
       <div class="row">
         <label>Mensaje</label>
-        <textarea class="input"
-                  th:field="*{message}"
-                  rows="4"
-                  placeholder="Escribe tu mensaje aquí..."></textarea>
-        <div class="err"
-             th:if="${#fields.hasErrors('message')}"
-             th:errors="*{message}"></div>
+        <textarea class="input" th:field="*{message}" rows="4" placeholder="Escribe tu mensaje aquí..."></textarea>
+        <div class="err" th:if="${#fields.hasErrors('message')}" th:errors="*{message}"></div>
       </div>
 
-      <button class="btn" type="submit">
-        Enviar
-      </button>
+      <button class="btn" type="submit">Enviar</button>
     </form>
 
   </div>
