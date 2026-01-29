@@ -19,7 +19,7 @@
       <a href="/">Inicio</a>
       <a href="/features">Explorar</a>
       <a href="/calculator">Calculadora</a>
-      <a href="/contact">Formulario</a>
+      <a href="/contact" class="active">Formulario</a>
       <a href="/carousel">Carrusel</a>
       <a href="/hello">Hola</a>
     </div>
@@ -47,47 +47,180 @@
       ✓ Enviado y guardado
     </div>
 
-    <form th:action="@{/contact}" th:object="${contactForm}" method="post">
+    <!-- Error global (si el controller usa binding.reject(...)) -->
+    <div class="err" th:if="${#fields.hasGlobalErrors()}" th:each="e : ${#fields.globalErrors()}" th:text="${e}"></div>
+
+    <!-- Error general del server si lo mandas como model.addAttribute("error", "...") -->
+    <div class="err" th:if="${error}" th:text="${error}"></div>
+
+    <form id="contactForm"
+          th:action="@{/contact}"
+          th:object="${contactForm}"
+          method="post"
+          autocomplete="off"
+          novalidate>
+
       <input type="hidden"
              th:if="${_csrf != null}"
              th:name="${_csrf.parameterName}"
              th:value="${_csrf.token}"/>
 
       <div class="row">
-        <label>Nombre completo</label>
-        <input class="input" th:field="*{fullName}" placeholder="Juan Pérez"/>
+        <label for="fullName">Nombre completo</label>
+        <input id="fullName"
+               class="input"
+               th:field="*{fullName}"
+               placeholder="Juan Pérez"
+               maxlength="70"
+               inputmode="text"
+               pattern="^[\p{L}][\p{L}\s'\-]{1,69}$"
+               title="Solo letras, espacios, ' y -"
+               required />
         <div class="err" th:if="${#fields.hasErrors('fullName')}" th:errors="*{fullName}"></div>
       </div>
 
       <div class="row">
-        <label>Correo electrónico</label>
-        <input class="input" th:field="*{email}" placeholder="juan@ejemplo.com"/>
+        <label for="email">Correo electrónico</label>
+        <input id="email"
+               class="input"
+               th:field="*{email}"
+               placeholder="juan@ejemplo.com.mx"
+               maxlength="254"
+               inputmode="email"
+               autocomplete="off"
+               pattern="^[A-Za-z0-9._%+\-]{1,64}@[A-Za-z0-9](?:[A-Za-z0-9\-]{0,61}[A-Za-z0-9])?(?:\.[A-Za-z0-9](?:[A-Za-z0-9\-]{0,61}[A-Za-z0-9])?)*\.[A-Za-z]{2,63}$"
+               title="Ej: usuario@dominio.com.mx"
+               required />
         <div class="err" th:if="${#fields.hasErrors('email')}" th:errors="*{email}"></div>
       </div>
 
       <div class="row">
-        <label>Teléfono</label>
-        <input class="input" th:field="*{phone}" placeholder="5512345678"/>
+        <label for="phone">Teléfono</label>
+        <input id="phone"
+               class="input"
+               th:field="*{phone}"
+               placeholder="5512345678"
+               maxlength="20"
+               inputmode="tel"
+               pattern="^[0-9+\-\s()]{7,20}$"
+               title="Usa números y opcional + - ( )"
+               required />
         <div class="err" th:if="${#fields.hasErrors('phone')}" th:errors="*{phone}"></div>
       </div>
 
       <div class="row">
-        <label>Fecha de nacimiento</label>
-        <input class="input" type="date" th:field="*{birthDate}"/>
+        <label for="birthDate">Fecha de nacimiento</label>
+        <input id="birthDate"
+               class="input"
+               type="date"
+               th:field="*{birthDate}"
+               required />
         <div class="err" th:if="${#fields.hasErrors('birthDate')}" th:errors="*{birthDate}"></div>
       </div>
 
       <div class="row">
-        <label>Mensaje</label>
-        <textarea class="input" th:field="*{message}" rows="4" placeholder="Escribe tu mensaje aquí..."></textarea>
+        <label for="message">Mensaje</label>
+        <textarea id="message"
+                  class="input"
+                  th:field="*{message}"
+                  rows="4"
+                  placeholder="Escribe tu mensaje aquí..."
+                  maxlength="500"
+                  required></textarea>
         <div class="err" th:if="${#fields.hasErrors('message')}" th:errors="*{message}"></div>
       </div>
+
+      <!-- Error de validación del cliente -->
+      <div id="clientError" class="err" style="display:none;"></div>
 
       <button class="btn" type="submit">Enviar</button>
     </form>
 
   </div>
 </main>
+
+<script>
+  // Bloqueo de caracteres peligrosos en cliente (el server manda la seguridad real)
+  const form = document.getElementById('contactForm');
+  const clientError = document.getElementById('clientError');
+
+  function showClientError(msg){
+    if (!clientError) return;
+    clientError.textContent = msg; // seguro: no inserta HTML
+    clientError.style.display = 'block';
+  }
+  function clearClientError(){
+    if (!clientError) return;
+    clientError.textContent = '';
+    clientError.style.display = 'none';
+  }
+
+  function hasBadChars(s){
+    if (!s) return false;
+    // bloquea etiquetas HTML y caracteres de control
+    if (s.includes('<') || s.includes('>')) return true;
+    return /[\u0000-\u001F\u007F]/.test(s);
+  }
+
+  function normalizeSpaces(s){
+    return (s || '').trim().replace(/\s+/g, ' ');
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    const fullName = document.getElementById('fullName');
+    const email = document.getElementById('email');
+    const phone = document.getElementById('phone');
+    const message = document.getElementById('message');
+
+    // Normaliza espacios y bloquea < > al escribir/pegar
+    [fullName, email, phone, message].forEach(el => {
+      if (!el) return;
+
+      el.addEventListener('input', () => {
+        clearClientError();
+        // quitar control chars en caliente
+        el.value = el.value.replace(/[\u0000-\u001F\u007F]/g, '');
+      });
+
+      el.addEventListener('blur', () => {
+        el.value = normalizeSpaces(el.value);
+      });
+
+      el.addEventListener('paste', (e) => {
+        const text = (e.clipboardData || window.clipboardData).getData('text');
+        if (hasBadChars(text)) {
+          e.preventDefault();
+          showClientError("No se permiten etiquetas HTML ni caracteres extraños.");
+        }
+      });
+    });
+
+    if (form) {
+      form.addEventListener('submit', (e) => {
+        clearClientError();
+
+        const values = [
+          fullName?.value || '',
+          email?.value || '',
+          phone?.value || '',
+          message?.value || ''
+        ];
+
+        if (values.some(hasBadChars)) {
+          e.preventDefault();
+          showClientError("No se permiten etiquetas HTML ni caracteres extraños.");
+          return;
+        }
+
+        // Deja que pattern/required hagan lo suyo; si quieres forzar:
+        if (!form.checkValidity()) {
+          e.preventDefault();
+          showClientError("Revisa los campos: formato inválido o faltan datos.");
+        }
+      });
+    }
+  });
+</script>
 
 </body>
 </html>

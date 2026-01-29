@@ -20,7 +20,7 @@
     </div>
 
     <div class="nav-links">
-      <a href="/">Inicio</a>
+      <a href="/" class="active">Inicio</a>
       <a href="/features">Explorar</a>
       <a href="/calculator">Calculadora</a>
       <a href="/contact">Formulario</a>
@@ -45,15 +45,38 @@
     <h1>Registro</h1>
     <p class="sub">Guarda un dato en la base de datos</p>
 
-    <form th:action="@{/register}" th:object="${registrationForm}" method="post">
+    <!-- Errores globales (binding.reject(...)) -->
+    <div class="err" th:if="${#fields.hasGlobalErrors()}"
+         th:each="e : ${#fields.globalErrors()}"
+         th:text="${e}"></div>
+
+    <!-- Error de DB (del controller) -->
+    <div class="err" th:if="${dbError}" th:text="${dbError}"></div>
+
+    <form id="regForm"
+          th:action="@{/register}"
+          th:object="${registrationForm}"
+          method="post"
+          autocomplete="off"
+          novalidate>
+
       <input type="hidden"
              th:if="${_csrf != null}"
              th:name="${_csrf.parameterName}"
              th:value="${_csrf.token}"/>
 
       <div class="row">
-        <label>Dato a insertar</label>
-        <input class="input" th:field="*{username}" placeholder="Ej. nombre de usuario"/>
+        <label for="username">Dato a insertar</label>
+        <input id="username"
+               class="input"
+               th:field="*{username}"
+               placeholder="Ej. nombre_de_usuario"
+               maxlength="30"
+               inputmode="text"
+               autocomplete="off"
+               pattern="^[A-Za-z0-9._-]{3,30}$"
+               title="3-30 caracteres: letras, números, punto, guion bajo y guion medio."
+               required />
         <div class="err" th:if="${#fields.hasErrors('username')}" th:errors="*{username}"></div>
       </div>
 
@@ -62,11 +85,89 @@
         <div class="err" th:if="${recaptchaError}" th:text="${recaptchaError}"></div>
       </div>
 
+      <!-- Error del cliente -->
+      <div id="clientError" class="err" style="display:none;"></div>
+
       <button class="btn" type="submit">Guardar</button>
     </form>
 
   </div>
 </main>
+
+<script>
+  const form = document.getElementById('regForm');
+  const username = document.getElementById('username');
+  const clientError = document.getElementById('clientError');
+
+  function showClientError(msg){
+    if (!clientError) return;
+    clientError.textContent = msg; // seguro (no HTML)
+    clientError.style.display = 'block';
+  }
+  function clearClientError(){
+    if (!clientError) return;
+    clientError.textContent = '';
+    clientError.style.display = 'none';
+  }
+
+  function hasBadChars(s){
+    if (!s) return false;
+    if (s.includes('<') || s.includes('>')) return true;
+    return /[\u0000-\u001F\u007F]/.test(s); // control chars
+  }
+
+  function sanitizeUsername(s){
+    // quita espacios y control chars
+    return (s || '')
+      .replace(/[\u0000-\u001F\u007F]/g, '')
+      .trim()
+      .replace(/\s+/g, '');
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    if (username) {
+      username.addEventListener('input', () => {
+        clearClientError();
+        username.value = sanitizeUsername(username.value);
+
+        // bloqueo rápido de < >
+        if (hasBadChars(username.value)) {
+          username.value = username.value.replace(/[<>]/g, '');
+          showClientError("No se permiten caracteres extraños.");
+        }
+      });
+
+      username.addEventListener('paste', (e) => {
+        const text = (e.clipboardData || window.clipboardData).getData('text');
+        if (hasBadChars(text)) {
+          e.preventDefault();
+          showClientError("No se permiten etiquetas HTML ni caracteres extraños.");
+        }
+      });
+    }
+
+    if (form) {
+      form.addEventListener('submit', (e) => {
+        clearClientError();
+
+        const val = sanitizeUsername(username ? username.value : '');
+        if (username) username.value = val;
+
+        if (hasBadChars(val)) {
+          e.preventDefault();
+          showClientError("No se permiten caracteres extraños.");
+          return;
+        }
+
+        // Forzar validación HTML5 del pattern/required
+        if (!form.checkValidity()) {
+          e.preventDefault();
+          showClientError("Usuario inválido. Usa 3-30 caracteres: letras, números, . _ -");
+        }
+      });
+    }
+  });
+</script>
 
 </body>
 </html>

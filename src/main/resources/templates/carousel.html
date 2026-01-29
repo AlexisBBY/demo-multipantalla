@@ -50,6 +50,22 @@
       align-items:center;
       flex-wrap:wrap;
     }
+
+    .hint{
+      margin-top: 8px;
+      color: rgba(255,255,255,.55);
+      font-size: 13px;
+    }
+
+    .err{
+      margin-top: 10px;
+      padding: 10px 12px;
+      border-radius: 12px;
+      border: 1px solid rgba(255,90,122,.35);
+      background: rgba(255,90,122,.10);
+      color: rgba(255,255,255,.92);
+      font-size: 14px;
+    }
   </style>
 </head>
 <body>
@@ -66,7 +82,7 @@
       <a href="/features">Explorar</a>
       <a href="/calculator">Calculadora</a>
       <a href="/contact">Formulario</a>
-      <a href="/carousel">Carrusel</a>
+      <a href="/carousel" class="active">Carrusel</a>
       <a href="/hello">Hola</a>
     </div>
   </div>
@@ -88,19 +104,39 @@
     <h1>Carrusel</h1>
     <p class="sub">Sube imágenes y navega por la galería</p>
 
-    <form th:action="@{/images/upload}"
+    <form id="uploadForm"
+          th:action="@{/images/upload}"
           method="post"
           enctype="multipart/form-data"
-          class="upload-row">
+          class="upload-row"
+          autocomplete="off"
+          novalidate>
 
       <input type="hidden"
              th:if="${_csrf != null}"
              th:name="${_csrf.parameterName}"
              th:value="${_csrf.token}"/>
 
-      <input class="input" type="file" name="file" accept="image/*" required />
+      <!-- Solo formatos comunes: PNG/JPG/JPEG/GIF/WEBP -->
+      <input id="fileInput"
+             class="input"
+             type="file"
+             name="file"
+             accept="image/png,image/jpeg,image/gif,image/webp"
+             required />
+
       <button class="btn" type="submit">Subir</button>
     </form>
+
+    <div class="hint">
+      Formatos permitidos: PNG, JPG/JPEG, GIF, WEBP. Tamaño máximo: 5 MB.
+    </div>
+
+    <!-- Error del server (si existe) -->
+    <div th:if="${error}" class="err" th:text="${error}"></div>
+
+    <!-- Error del cliente -->
+    <div id="clientError" class="err" style="display:none;"></div>
 
     <hr class="sep"/>
 
@@ -117,6 +153,7 @@
           <img th:src="@{'/images/' + ${img.id}}"
                th:alt="${img.originalName}"
                class="slide-img"/>
+          <!-- th:text escapa HTML, evita XSS -->
           <div class="caption" th:text="${img.originalName}"></div>
         </div>
       </div>
@@ -132,6 +169,7 @@
 </main>
 
 <script>
+  // ===== Carrusel =====
   let current = 0;
   let timer = null;
 
@@ -160,6 +198,51 @@
     timer = null;
   }
 
+  // ===== Validación de archivo (cliente) =====
+  const ALLOWED_MIME = new Set(["image/png", "image/jpeg", "image/gif", "image/webp"]);
+  const ALLOWED_EXT  = new Set(["png", "jpg", "jpeg", "gif", "webp"]);
+  const MAX_BYTES = 5 * 1024 * 1024; // 5MB
+
+  function showClientError(msg){
+    const box = document.getElementById('clientError');
+    if (!box) return;
+    box.textContent = msg; // textContent = seguro (no HTML)
+    box.style.display = 'block';
+  }
+
+  function clearClientError(){
+    const box = document.getElementById('clientError');
+    if (!box) return;
+    box.textContent = '';
+    box.style.display = 'none';
+  }
+
+  function getExt(filename){
+    const name = (filename || "").trim();
+    const i = name.lastIndexOf(".");
+    if (i < 0) return "";
+    return name.substring(i + 1).toLowerCase();
+  }
+
+  function validateFile(file){
+    if (!file) return "Selecciona una imagen.";
+
+    if (file.size <= 0) return "Archivo inválido.";
+    if (file.size > MAX_BYTES) return "La imagen excede 5 MB.";
+
+    const ext = getExt(file.name);
+    if (!ALLOWED_EXT.has(ext)) {
+      return "Formato no permitido. Usa PNG, JPG/JPEG, GIF o WEBP.";
+    }
+
+    // MIME lo da el navegador (no 100% confiable, pero ayuda)
+    if (!ALLOWED_MIME.has(file.type)) {
+      return "Tipo de archivo inválido. Sube una imagen real (PNG/JPG/GIF/WEBP).";
+    }
+
+    return null;
+  }
+
   document.addEventListener('DOMContentLoaded', () => {
     showSlide(0);
     startAuto();
@@ -174,6 +257,35 @@
       if (e.key === 'ArrowLeft') prevSlide();
       if (e.key === 'ArrowRight') nextSlide();
     });
+
+    const form = document.getElementById('uploadForm');
+    const input = document.getElementById('fileInput');
+
+    if (input) {
+      input.addEventListener('change', () => {
+        clearClientError();
+        const file = input.files && input.files[0] ? input.files[0] : null;
+        const err = validateFile(file);
+        if (err) {
+          // Limpia para evitar enviar algo raro
+          input.value = "";
+          showClientError(err);
+        }
+      });
+    }
+
+    if (form) {
+      form.addEventListener('submit', (e) => {
+        clearClientError();
+        const file = input && input.files && input.files[0] ? input.files[0] : null;
+        const err = validateFile(file);
+        if (err) {
+          e.preventDefault();
+          if (input) input.value = "";
+          showClientError(err);
+        }
+      });
+    }
   });
 </script>
 

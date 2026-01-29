@@ -8,6 +8,7 @@
 </head>
 <body>
 
+<!-- ===== NAVBAR ===== -->
 <nav class="navbar">
   <div class="nav-inner">
     <div class="brand">
@@ -18,7 +19,7 @@
     <div class="nav-links">
       <a href="/">Inicio</a>
       <a href="/features">Explorar</a>
-      <a href="/calculator">Calculadora</a>
+      <a href="/calculator" class="active">Calculadora</a>
       <a href="/contact">Formulario</a>
       <a href="/carousel">Carrusel</a>
       <a href="/hello">Hola</a>
@@ -26,6 +27,7 @@
   </div>
 </nav>
 
+<!-- ===== BREADCRUMBS ===== -->
 <div class="crumbs">
   <div class="trail">
     <a href="/">Inicio</a>
@@ -36,43 +38,85 @@
   </div>
 </div>
 
+<!-- ===== MAIN ===== -->
 <main class="main">
   <div class="card">
 
     <h1>Calculadora</h1>
     <p class="sub">Suma y división de números</p>
 
-    <form method="post" th:action="@{/calculator/sum}">
+    <form method="post" th:action="@{/calculator/sum}" autocomplete="off" novalidate>
+
+      <!-- CSRF -->
       <input type="hidden"
              th:if="${_csrf != null}"
              th:name="${_csrf.parameterName}"
              th:value="${_csrf.token}"/>
 
+      <!-- ===== INPUT A ===== -->
       <div class="row">
-        <label>Primer número</label>
-        <input class="input" name="a" th:value="${a}" placeholder="Ej: 10"/>
+        <label for="a">Primer número</label>
+        <input
+          id="a"
+          class="input"
+          name="a"
+          th:value="${a}"
+          placeholder="Ej: 10 o 10.5"
+          inputmode="decimal"
+          maxlength="20"
+          pattern="^[0-9]+([.][0-9]{1,10})?$"
+          title="Solo números. Decimales con punto."
+          required
+        />
       </div>
 
+      <!-- ===== INPUT B ===== -->
       <div class="row">
-        <label>Segundo número</label>
-        <input class="input" name="b" th:value="${b}" placeholder="Ej: 5"/>
+        <label for="b">Segundo número</label>
+        <input
+          id="b"
+          class="input"
+          name="b"
+          th:value="${b}"
+          placeholder="Ej: 5 o 5.25"
+          inputmode="decimal"
+          maxlength="20"
+          pattern="^[0-9]+([.][0-9]{1,10})?$"
+          title="Solo números. Decimales con punto."
+          required
+        />
       </div>
 
+      <!-- ===== BOTONES ===== -->
       <div class="row" style="display:flex; gap:10px; margin-top:14px;">
-        <button class="btn" type="submit" th:formaction="@{/calculator/sum}">Sumar</button>
-        <button class="btn" type="submit" th:formaction="@{/calculator/divide}">Dividir</button>
+        <button class="btn" type="submit" th:formaction="@{/calculator/sum}">
+          Sumar
+        </button>
+        <button class="btn" type="submit" th:formaction="@{/calculator/divide}">
+          Dividir
+        </button>
       </div>
 
       <div class="row" style="margin-top:12px;">
-        <button class="btn" type="submit" th:formaction="@{/calculator/clear}">Limpiar</button>
+        <button class="btn" type="submit" th:formaction="@{/calculator/clear}">
+          Limpiar
+        </button>
       </div>
     </form>
 
+    <!-- ===== ERROR (XSS SAFE) ===== -->
     <div th:if="${error}" class="err" th:text="${error}"></div>
 
+    <!-- ===== RESULTADO ===== -->
     <div th:if="${result != null}"
-         style="margin-top:14px; padding:14px; border-radius:14px; border:1px solid rgba(255,255,255,.12); background:#0a0a0a; text-align:center;">
-      <b>Resultado:</b> <span th:text="${result}"></span>
+         style="margin-top:14px;
+                padding:14px;
+                border-radius:14px;
+                border:1px solid rgba(255,255,255,.12);
+                background:#0a0a0a;
+                text-align:center;">
+      <b>Resultado:</b>
+      <span th:text="${result}"></span>
     </div>
 
   </div>
