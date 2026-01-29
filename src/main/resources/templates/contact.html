@@ -7,16 +7,26 @@
   <title>Formulario</title>
 
   <style>
-    /* Opcional: para que los anchors no queden debajo del navbar sticky */
-    .row { scroll-margin-top: 90px; }
+    /* Para que al dar click en el resumen, no quede tapado por navbar sticky */
+    .row { scroll-margin-top: 95px; }
 
-    /* Si tu app.css ya tiene err, puedes ignorar esto */
-    .err { margin-top: 8px; padding: 10px 12px; border-radius: 12px; border:1px solid rgba(255,90,122,.35); background: rgba(255,90,122,.08); color: rgba(255,255,255,.92); }
-    .err ul { margin: 8px 0 0; padding-left: 18px; }
-    .err a { color: inherit; text-decoration: underline; }
+    /* Estilo de error (si ya lo tienes en app.css, puedes quitarlo) */
+    .err{
+      margin-top: 8px;
+      padding: 10px 12px;
+      border-radius: 12px;
+      border: 1px solid rgba(255,90,122,.35);
+      background: rgba(255,90,122,.08);
+      color: rgba(255,255,255,.92);
+    }
+    .err ul{ margin: 8px 0 0; padding-left: 18px; }
+    .err a{ color: inherit; text-decoration: underline; }
 
-    /* Esto sirve si no lo tienes en app.css */
-    .input.is-invalid { border: 1.5px solid #ff5a7a !important; }
+    /* Marca input con error (server-side) */
+    .input.is-invalid{
+      border: 1.5px solid #ff5a7a !important;
+      outline: none;
+    }
   </style>
 </head>
 <body>
@@ -60,34 +70,23 @@
       ✓ Enviado y guardado
     </div>
 
-    <!-- ✅ Resumen: EN QUÉ CAMPOS hay errores -->
-    <div class="err" th:if="${#fields.hasErrors()}">
+    <!-- ✅ Resumen: SOLO después de enviar y fallar -->
+    <div class="err" th:if="${showErrors} and ${#fields.hasErrors()}">
       <strong>Revisa estos campos:</strong>
       <ul>
-        <li th:if="${#fields.hasErrors('fullName')}">
-          <a href="#fullName">Nombre completo</a>
-        </li>
-        <li th:if="${#fields.hasErrors('email')}">
-          <a href="#email">Correo electrónico</a>
-        </li>
-        <li th:if="${#fields.hasErrors('phone')}">
-          <a href="#phone">Teléfono</a>
-        </li>
-        <li th:if="${#fields.hasErrors('birthDate')}">
-          <a href="#birthDate">Fecha de nacimiento</a>
-        </li>
-        <li th:if="${#fields.hasErrors('message')}">
-          <a href="#message">Mensaje</a>
-        </li>
+        <li th:if="${#fields.hasErrors('fullName')}"><a href="#fullName">Nombre completo</a></li>
+        <li th:if="${#fields.hasErrors('email')}"><a href="#email">Correo electrónico</a></li>
+        <li th:if="${#fields.hasErrors('phone')}"><a href="#phone">Teléfono</a></li>
+        <li th:if="${#fields.hasErrors('birthDate')}"><a href="#birthDate">Fecha de nacimiento</a></li>
+        <li th:if="${#fields.hasErrors('message')}"><a href="#message">Mensaje</a></li>
       </ul>
     </div>
 
-    <!-- Error global (binding.reject(...)) -->
-    <div class="err" th:if="${#fields.hasGlobalErrors()}"
-         th:each="e : ${#fields.globalErrors()}" th:text="${e}"></div>
-
-    <!-- Error general del server si lo mandas como model.addAttribute("error", "...") -->
-    <div class="err" th:if="${error}" th:text="${error}"></div>
+    <!-- ✅ Error global (binding.reject(...)) SOLO después de enviar -->
+    <div class="err"
+         th:if="${showErrors} and ${#fields.hasGlobalErrors()}"
+         th:each="e : ${#fields.globalErrors()}"
+         th:text="${e}"></div>
 
     <form id="contactForm"
           th:action="@{/contact}"
@@ -101,11 +100,12 @@
              th:name="${_csrf.parameterName}"
              th:value="${_csrf.token}"/>
 
+      <!-- NOMBRE -->
       <div class="row">
         <label for="fullName">Nombre completo</label>
         <input id="fullName"
                class="input"
-               th:classappend="${#fields.hasErrors('fullName')} ? ' is-invalid' : ''"
+               th:classappend="${showErrors} and ${#fields.hasErrors('fullName')} ? ' is-invalid' : ''"
                th:field="*{fullName}"
                placeholder="Juan Pérez"
                maxlength="70"
@@ -113,14 +113,16 @@
                pattern="^[\p{L}][\p{L}\s'\-]{1,69}$"
                title="Solo letras, espacios, ' y -"
                required />
-        <div class="err" th:if="${#fields.hasErrors('fullName')}" th:errors="*{fullName}"></div>
+        <!-- ✅ error debajo del campo (solo si showErrors) -->
+        <div class="err" th:if="${showErrors} and ${#fields.hasErrors('fullName')}" th:errors="*{fullName}"></div>
       </div>
 
+      <!-- EMAIL -->
       <div class="row">
         <label for="email">Correo electrónico</label>
         <input id="email"
                class="input"
-               th:classappend="${#fields.hasErrors('email')} ? ' is-invalid' : ''"
+               th:classappend="${showErrors} and ${#fields.hasErrors('email')} ? ' is-invalid' : ''"
                th:field="*{email}"
                placeholder="juan@ejemplo.com.mx"
                maxlength="254"
@@ -129,14 +131,15 @@
                pattern="^[A-Za-z0-9._%+\-]{1,64}@[A-Za-z0-9](?:[A-Za-z0-9\-]{0,61}[A-Za-z0-9])?(?:\.[A-Za-z0-9](?:[A-Za-z0-9\-]{0,61}[A-Za-z0-9])?)*\.[A-Za-z]{2,63}$"
                title="Ej: usuario@dominio.com.mx"
                required />
-        <div class="err" th:if="${#fields.hasErrors('email')}" th:errors="*{email}"></div>
+        <div class="err" th:if="${showErrors} and ${#fields.hasErrors('email')}" th:errors="*{email}"></div>
       </div>
 
+      <!-- TEL -->
       <div class="row">
         <label for="phone">Teléfono</label>
         <input id="phone"
                class="input"
-               th:classappend="${#fields.hasErrors('phone')} ? ' is-invalid' : ''"
+               th:classappend="${showErrors} and ${#fields.hasErrors('phone')} ? ' is-invalid' : ''"
                th:field="*{phone}"
                placeholder="5512345678"
                maxlength="20"
@@ -144,31 +147,33 @@
                pattern="^[0-9+\-\s()]{7,20}$"
                title="Usa números y opcional + - ( )"
                required />
-        <div class="err" th:if="${#fields.hasErrors('phone')}" th:errors="*{phone}"></div>
+        <div class="err" th:if="${showErrors} and ${#fields.hasErrors('phone')}" th:errors="*{phone}"></div>
       </div>
 
+      <!-- BIRTHDATE -->
       <div class="row">
         <label for="birthDate">Fecha de nacimiento</label>
         <input id="birthDate"
                class="input"
-               th:classappend="${#fields.hasErrors('birthDate')} ? ' is-invalid' : ''"
+               th:classappend="${showErrors} and ${#fields.hasErrors('birthDate')} ? ' is-invalid' : ''"
                type="date"
                th:field="*{birthDate}"
                required />
-        <div class="err" th:if="${#fields.hasErrors('birthDate')}" th:errors="*{birthDate}"></div>
+        <div class="err" th:if="${showErrors} and ${#fields.hasErrors('birthDate')}" th:errors="*{birthDate}"></div>
       </div>
 
+      <!-- MENSAJE -->
       <div class="row">
         <label for="message">Mensaje</label>
         <textarea id="message"
                   class="input"
-                  th:classappend="${#fields.hasErrors('message')} ? ' is-invalid' : ''"
+                  th:classappend="${showErrors} and ${#fields.hasErrors('message')} ? ' is-invalid' : ''"
                   th:field="*{message}"
                   rows="4"
                   placeholder="Escribe tu mensaje aquí..."
                   maxlength="500"
                   required></textarea>
-        <div class="err" th:if="${#fields.hasErrors('message')}" th:errors="*{message}"></div>
+        <div class="err" th:if="${showErrors} and ${#fields.hasErrors('message')}" th:errors="*{message}"></div>
       </div>
 
       <!-- Error de validación del cliente -->

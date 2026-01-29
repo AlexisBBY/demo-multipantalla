@@ -28,6 +28,8 @@ class ContactController(
 
     @GetMapping
     fun view(model: Model): String {
+        // ✅ Al abrir por primera vez, NO mostramos errores
+        model.addAttribute("showErrors", false)
         model.addAttribute("contactForm", ContactForm())
         return "contact"
     }
@@ -39,7 +41,7 @@ class ContactController(
         model: Model
     ): String {
 
-        // Limpieza defensiva (sin reasignar al DTO)
+        // Limpieza defensiva SIN reasignar al DTO
         val fullName = clean(contactForm.fullName)
         val email = clean(contactForm.email).lowercase()
         val phone = clean(contactForm.phone)
@@ -82,8 +84,8 @@ class ContactController(
         }
 
         if (binding.hasErrors()) {
-            // ✅ Resumen de campos con error (para mostrar arriba)
-            model.addAttribute("errorFields", binding.fieldErrors.map { it.field }.distinct())
+            // ✅ Solo si el usuario intentó enviar y falló
+            model.addAttribute("showErrors", true)
             return "contact"
         }
 
