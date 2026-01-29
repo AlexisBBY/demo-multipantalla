@@ -19,21 +19,11 @@ import java.time.Period
 class ContactController(
     private val repo: ContactMessageRepo
 ) {
-
-    // Nombre: letras (incluye acentos), espacios, ' y -
     private val NAME_REGEX = Regex("""^[\p{L}][\p{L}\s'\-]{1,69}$""")
-
-    // Email (ASCII) permite TLD y subdominios: .com.mx, .co.uk, etc.
-    // local: letras/dígitos y ._%+- (común)
-    // domain: labels con letras/dígitos/-, separados por puntos
-    // final TLD: 2-63 letras
     private val EMAIL_REGEX = Regex(
         """^[A-Za-z0-9._%+\-]{1,64}@[A-Za-z0-9](?:[A-Za-z0-9\-]{0,61}[A-Za-z0-9])?(?:\.[A-Za-z0-9](?:[A-Za-z0-9\-]{0,61}[A-Za-z0-9])?)*\.[A-Za-z]{2,63}$"""
     )
-
-    // Teléfono: dígitos y símbolos comunes
     private val PHONE_REGEX = Regex("""^[0-9+\-\s()]{7,20}$""")
-
     private val MAX_MESSAGE = 500
 
     @GetMapping
@@ -49,24 +39,18 @@ class ContactController(
         model: Model
     ): String {
 
-        // ==== Sanitizar + validar campos para evitar "raros" ====
+        // Limpieza defensiva SIN reasignar al DTO
         val fullName = clean(contactForm.fullName)
         val email = clean(contactForm.email).lowercase()
         val phone = clean(contactForm.phone)
         val message = clean(contactForm.message)
 
-        // Reinyectar valores limpios al form (para que se muestren bien si hay error)
-        contactForm.fullName = fullName
-        contactForm.email = email
-        contactForm.phone = phone
-        contactForm.message = message
-
-        // Bloquear HTML directo / XSS almacenado (muy común)
+        // Bloquear HTML / caracteres raros
         if (containsHtmlLike(fullName) || containsHtmlLike(email) || containsHtmlLike(phone) || containsHtmlLike(message)) {
-            binding.reject("invalidChars", "No se permiten símbolos o etiquetas HTML.")
+            binding.reject("invalidChars", "No se permiten etiquetas HTML ni caracteres extraños.")
         }
 
-        // Validación fuerte por campo
+        // Validaciones fuertes
         if (fullName.isBlank() || !NAME_REGEX.matches(fullName)) {
             binding.rejectValue("fullName", "name", "Nombre inválido (solo letras y espacios).")
         }
@@ -85,7 +69,7 @@ class ContactController(
             binding.rejectValue("message", "messageLen", "El mensaje no debe pasar de $MAX_MESSAGE caracteres.")
         }
 
-        // Validación birthDate sin tronar
+        // Validación birthDate sin !!
         val bd = contactForm.birthDate
         if (bd == null) {
             binding.rejectValue("birthDate", "required", "La fecha de nacimiento es obligatoria.")
@@ -93,21 +77,18 @@ class ContactController(
             val today = LocalDate.now()
             val age = Period.between(bd, today).years
             if (age !in 18..120) {
-                binding.rejectValue("birthDate", "age", "Debes tener entre 18 y 120 años.")
+                binding.rejectValue("birthDate", "age", "Debes tener entre 18 y 120 años")
             }
         }
 
-        if (binding.hasErrors()) {
-            return "contact"
-        }
+        if (binding.hasErrors()) return "contact"
 
-        // Guardado (ya validado y limpiado)
         repo.save(
             ContactMessage(
                 fullName = fullName,
                 email = email,
                 phone = phone,
-                birthDate = bd!!,
+                birthDate = bd!!, // aquí ya es seguro porque validamos arriba
                 message = message
             )
         )
@@ -115,19 +96,14 @@ class ContactController(
         return "redirect:/contact?sent=1"
     }
 
-    // ===== helpers =====
-
     private fun clean(s: String?): String {
         if (s == null) return ""
-        // quita caracteres de control (incluye null byte) y normaliza espacios
         val noCtrl = s.replace(Regex("""[\u0000-\u001F\u007F]"""), "")
         return noCtrl.trim().replace(Regex("""\s+"""), " ")
     }
 
     private fun containsHtmlLike(s: String): Boolean {
-        // bloquea < > y también cosas típicas peligrosas
         if (s.contains('<') || s.contains('>')) return true
-        // opcional: bloquear comillas/backticks si quieres más estricto
         if (s.contains('\u0000')) return true
         return false
     }
