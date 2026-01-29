@@ -39,7 +39,7 @@ class ContactController(
         model: Model
     ): String {
 
-        // Limpieza defensiva SIN reasignar al DTO
+        // Limpieza defensiva (sin reasignar al DTO)
         val fullName = clean(contactForm.fullName)
         val email = clean(contactForm.email).lowercase()
         val phone = clean(contactForm.phone)
@@ -69,7 +69,7 @@ class ContactController(
             binding.rejectValue("message", "messageLen", "El mensaje no debe pasar de $MAX_MESSAGE caracteres.")
         }
 
-        // Validación birthDate sin !!
+        // Validación birthDate
         val bd = contactForm.birthDate
         if (bd == null) {
             binding.rejectValue("birthDate", "required", "La fecha de nacimiento es obligatoria.")
@@ -81,14 +81,18 @@ class ContactController(
             }
         }
 
-        if (binding.hasErrors()) return "contact"
+        if (binding.hasErrors()) {
+            // ✅ Resumen de campos con error (para mostrar arriba)
+            model.addAttribute("errorFields", binding.fieldErrors.map { it.field }.distinct())
+            return "contact"
+        }
 
         repo.save(
             ContactMessage(
                 fullName = fullName,
                 email = email,
                 phone = phone,
-                birthDate = bd!!, // aquí ya es seguro porque validamos arriba
+                birthDate = bd!!,
                 message = message
             )
         )

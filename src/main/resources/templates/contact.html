@@ -5,6 +5,19 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <link rel="stylesheet" href="/app.css"/>
   <title>Formulario</title>
+
+  <style>
+    /* Opcional: para que los anchors no queden debajo del navbar sticky */
+    .row { scroll-margin-top: 90px; }
+
+    /* Si tu app.css ya tiene err, puedes ignorar esto */
+    .err { margin-top: 8px; padding: 10px 12px; border-radius: 12px; border:1px solid rgba(255,90,122,.35); background: rgba(255,90,122,.08); color: rgba(255,255,255,.92); }
+    .err ul { margin: 8px 0 0; padding-left: 18px; }
+    .err a { color: inherit; text-decoration: underline; }
+
+    /* Esto sirve si no lo tienes en app.css */
+    .input.is-invalid { border: 1.5px solid #ff5a7a !important; }
+  </style>
 </head>
 <body>
 
@@ -47,8 +60,31 @@
       ✓ Enviado y guardado
     </div>
 
-    <!-- Error global (si el controller usa binding.reject(...)) -->
-    <div class="err" th:if="${#fields.hasGlobalErrors()}" th:each="e : ${#fields.globalErrors()}" th:text="${e}"></div>
+    <!-- ✅ Resumen: EN QUÉ CAMPOS hay errores -->
+    <div class="err" th:if="${#fields.hasErrors()}">
+      <strong>Revisa estos campos:</strong>
+      <ul>
+        <li th:if="${#fields.hasErrors('fullName')}">
+          <a href="#fullName">Nombre completo</a>
+        </li>
+        <li th:if="${#fields.hasErrors('email')}">
+          <a href="#email">Correo electrónico</a>
+        </li>
+        <li th:if="${#fields.hasErrors('phone')}">
+          <a href="#phone">Teléfono</a>
+        </li>
+        <li th:if="${#fields.hasErrors('birthDate')}">
+          <a href="#birthDate">Fecha de nacimiento</a>
+        </li>
+        <li th:if="${#fields.hasErrors('message')}">
+          <a href="#message">Mensaje</a>
+        </li>
+      </ul>
+    </div>
+
+    <!-- Error global (binding.reject(...)) -->
+    <div class="err" th:if="${#fields.hasGlobalErrors()}"
+         th:each="e : ${#fields.globalErrors()}" th:text="${e}"></div>
 
     <!-- Error general del server si lo mandas como model.addAttribute("error", "...") -->
     <div class="err" th:if="${error}" th:text="${error}"></div>
@@ -69,6 +105,7 @@
         <label for="fullName">Nombre completo</label>
         <input id="fullName"
                class="input"
+               th:classappend="${#fields.hasErrors('fullName')} ? ' is-invalid' : ''"
                th:field="*{fullName}"
                placeholder="Juan Pérez"
                maxlength="70"
@@ -83,6 +120,7 @@
         <label for="email">Correo electrónico</label>
         <input id="email"
                class="input"
+               th:classappend="${#fields.hasErrors('email')} ? ' is-invalid' : ''"
                th:field="*{email}"
                placeholder="juan@ejemplo.com.mx"
                maxlength="254"
@@ -98,6 +136,7 @@
         <label for="phone">Teléfono</label>
         <input id="phone"
                class="input"
+               th:classappend="${#fields.hasErrors('phone')} ? ' is-invalid' : ''"
                th:field="*{phone}"
                placeholder="5512345678"
                maxlength="20"
@@ -112,6 +151,7 @@
         <label for="birthDate">Fecha de nacimiento</label>
         <input id="birthDate"
                class="input"
+               th:classappend="${#fields.hasErrors('birthDate')} ? ' is-invalid' : ''"
                type="date"
                th:field="*{birthDate}"
                required />
@@ -122,6 +162,7 @@
         <label for="message">Mensaje</label>
         <textarea id="message"
                   class="input"
+                  th:classappend="${#fields.hasErrors('message')} ? ' is-invalid' : ''"
                   th:field="*{message}"
                   rows="4"
                   placeholder="Escribe tu mensaje aquí..."
@@ -146,7 +187,7 @@
 
   function showClientError(msg){
     if (!clientError) return;
-    clientError.textContent = msg; // seguro: no inserta HTML
+    clientError.textContent = msg;
     clientError.style.display = 'block';
   }
   function clearClientError(){
@@ -157,7 +198,6 @@
 
   function hasBadChars(s){
     if (!s) return false;
-    // bloquea etiquetas HTML y caracteres de control
     if (s.includes('<') || s.includes('>')) return true;
     return /[\u0000-\u001F\u007F]/.test(s);
   }
@@ -172,13 +212,11 @@
     const phone = document.getElementById('phone');
     const message = document.getElementById('message');
 
-    // Normaliza espacios y bloquea < > al escribir/pegar
     [fullName, email, phone, message].forEach(el => {
       if (!el) return;
 
       el.addEventListener('input', () => {
         clearClientError();
-        // quitar control chars en caliente
         el.value = el.value.replace(/[\u0000-\u001F\u007F]/g, '');
       });
 
@@ -212,7 +250,6 @@
           return;
         }
 
-        // Deja que pattern/required hagan lo suyo; si quieres forzar:
         if (!form.checkValidity()) {
           e.preventDefault();
           showClientError("Revisa los campos: formato inválido o faltan datos.");
