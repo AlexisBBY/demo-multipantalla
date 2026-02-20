@@ -5,25 +5,27 @@ import java.time.Instant
 import java.time.LocalDate
 
 @Entity
-@Table(name = "contact_messages")
+@Table(name = "contact_message")
 class ContactMessage(
-    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     var id: Long? = null,
 
-    @Column(nullable = false, length = 50)
-    var fullName: String,
+    @Column(nullable = false, length = 70)
+    var fullName: String = "",
 
-    @Column(nullable = false, length = 100)
-    var email: String,
+    @Column(nullable = false, length = 254)
+    var email: String = "",
 
-    @Column(nullable = false, length = 10)
-    var phone: String,
+    @Column(nullable = false, length = 20)
+    var phone: String = "",
 
     @Column(nullable = false)
-    var birthDate: LocalDate,
+    var birthDate: LocalDate = LocalDate.now(),
 
     @Column(nullable = false, length = 500)
-    var message: String,
+    var message: String = "",
 
     @Column(nullable = false)
     var createdAt: Instant = Instant.now()

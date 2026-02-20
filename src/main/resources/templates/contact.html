@@ -17,30 +17,55 @@
       background: rgba(255,90,122,.08);
       color: rgba(255,255,255,.92);
     }
-    .err ul{ margin: 8px 0 0; padding-left: 18px; }
-    .err a{ color: inherit; text-decoration: underline; }
 
     .input.is-invalid{
       border: 1.5px solid #ff5a7a !important;
-      outline: none;
     }
 
-    /* mini layout para filtros */
     .filters{
       display:flex;
       gap:10px;
       flex-wrap:wrap;
-      align-items:flex-end;
-      margin-top:10px;
+      margin:15px 0;
     }
-    .filters .f{
-      display:flex;
-      flex-direction:column;
-      gap:6px;
-      min-width:160px;
-      flex:1;
+
+    .filters input, .filters select{
+      padding:8px;
+      border-radius:8px;
+      border:1px solid #444;
+      background:#111;
+      color:white;
     }
-    .filters label{ font-size:13px; opacity:.9; }
+
+    table{
+      width:100%;
+      border-collapse: collapse;
+      margin-top:15px;
+    }
+
+    th, td{
+      padding:8px;
+      border-bottom:1px solid rgba(255,255,255,.1);
+      text-align:left;
+    }
+
+    th{
+      background:#111;
+    }
+
+    .btn{
+      padding:10px 16px;
+      border-radius:10px;
+      border:none;
+      cursor:pointer;
+      font-weight:600;
+    }
+
+    .btn-light{
+      background:#eaeaea;
+      color:#000;
+    }
+
   </style>
 </head>
 <body>
@@ -63,194 +88,84 @@
   </div>
 </nav>
 
-<div class="crumbs">
-  <div class="trail">
-    <a href="/">Inicio</a>
-    <span class="sep">›</span>
-    <a href="/features">Explorar</a>
-    <span class="sep">›</span>
-    <span class="current">Formulario</span>
-  </div>
-</div>
-
 <main class="main">
   <div class="card">
 
     <h1>Formulario</h1>
     <p class="sub">Todos los campos son obligatorios</p>
 
-    <div th:if="${param.sent}"
-         style="text-align:center; margin-bottom:16px; color:#7dff9a;">
-      ✓ Enviado y guardado
-    </div>
-
-    <div class="err" th:if="${showErrors} and ${#fields.hasErrors()}">
-      <strong>Revisa estos campos:</strong>
-      <ul>
-        <li th:if="${#fields.hasErrors('fullName')}"><a href="#fullName">Nombre completo</a></li>
-        <li th:if="${#fields.hasErrors('email')}"><a href="#email">Correo electrónico</a></li>
-        <li th:if="${#fields.hasErrors('phone')}"><a href="#phone">Teléfono</a></li>
-        <li th:if="${#fields.hasErrors('birthDate')}"><a href="#birthDate">Fecha de nacimiento</a></li>
-        <li th:if="${#fields.hasErrors('message')}"><a href="#message">Mensaje</a></li>
-      </ul>
-    </div>
-
-    <div class="err"
-         th:if="${showErrors} and ${#fields.hasGlobalErrors()}"
-         th:each="e : ${#fields.globalErrors()}"
-         th:text="${e}"></div>
-
-    <form id="contactForm"
-          th:action="@{/contact}"
-          th:object="${contactForm}"
-          method="post"
-          autocomplete="off"
-          novalidate>
-
-      <input type="hidden"
-             th:if="${_csrf != null}"
-             th:name="${_csrf.parameterName}"
-             th:value="${_csrf.token}"/>
+    <form id="contactForm" method="post" autocomplete="off">
 
       <div class="row">
-        <label for="fullName">Nombre completo</label>
-        <input id="fullName"
-               class="input"
-               th:classappend="${showErrors} and ${#fields.hasErrors('fullName')} ? ' is-invalid' : ''"
-               th:field="*{fullName}"
-               placeholder="Juan Pérez"
-               maxlength="70"
-               inputmode="text"
-               pattern="^[\p{L}][\p{L}\s'\-]{1,69}$"
-               title="Solo letras, espacios, ' y -"
-               required />
-        <div class="err" th:if="${showErrors} and ${#fields.hasErrors('fullName')}" th:errors="*{fullName}"></div>
+        <label>Nombre completo</label>
+        <input id="fullName" class="input" maxlength="70" required />
       </div>
 
       <div class="row">
-        <label for="email">Correo electrónico</label>
-        <input id="email"
-               class="input"
-               th:classappend="${showErrors} and ${#fields.hasErrors('email')} ? ' is-invalid' : ''"
-               th:field="*{email}"
-               placeholder="juan@ejemplo.com.mx"
-               maxlength="254"
-               inputmode="email"
-               autocomplete="off"
-               pattern="^[A-Za-z0-9._%+\-]{1,64}@[A-Za-z0-9](?:[A-Za-z0-9\-]{0,61}[A-Za-z0-9])?(?:\.[A-Za-z0-9](?:[A-Za-z0-9\-]{0,61}[A-Za-z0-9])?)*\.[A-Za-z]{2,63}$"
-               title="Ej: usuario@dominio.com.mx"
-               required />
-        <div class="err" th:if="${showErrors} and ${#fields.hasErrors('email')}" th:errors="*{email}"></div>
+        <label>Correo electrónico</label>
+        <input id="email" type="email" class="input" required />
       </div>
 
       <div class="row">
-        <label for="phone">Teléfono</label>
-        <input id="phone"
-               class="input"
-               th:classappend="${showErrors} and ${#fields.hasErrors('phone')} ? ' is-invalid' : ''"
-               th:field="*{phone}"
-               placeholder="5512345678"
-               maxlength="20"
-               inputmode="tel"
-               pattern="^[0-9+\-\s()]{7,20}$"
-               title="Usa números y opcional + - ( )"
-               required />
-        <div class="err" th:if="${showErrors} and ${#fields.hasErrors('phone')}" th:errors="*{phone}"></div>
+        <label>Teléfono</label>
+        <input id="phone" class="input" required />
       </div>
 
       <div class="row">
-        <label for="birthDate">Fecha de nacimiento</label>
-        <input id="birthDate"
-               class="input"
-               th:classappend="${showErrors} and ${#fields.hasErrors('birthDate')} ? ' is-invalid' : ''"
-               type="date"
-               th:field="*{birthDate}"
-               required />
-        <div class="err" th:if="${showErrors} and ${#fields.hasErrors('birthDate')}" th:errors="*{birthDate}"></div>
+        <label>Fecha de nacimiento</label>
+        <input id="birthDate" type="date" class="input" required />
       </div>
 
       <div class="row">
-        <label for="message">Mensaje</label>
-        <textarea id="message"
-                  class="input"
-                  th:classappend="${showErrors} and ${#fields.hasErrors('message')} ? ' is-invalid' : ''"
-                  th:field="*{message}"
-                  rows="4"
-                  placeholder="Escribe tu mensaje aquí..."
-                  maxlength="500"
-                  required></textarea>
-        <div class="err" th:if="${showErrors} and ${#fields.hasErrors('message')}" th:errors="*{message}"></div>
+        <label>Mensaje</label>
+        <textarea id="message" rows="4" class="input" required></textarea>
       </div>
 
       <div id="clientError" class="err" style="display:none;"></div>
 
-      <button class="btn" type="submit">Enviar</button>
+      <button type="submit" class="btn btn-light">Enviar</button>
     </form>
 
-    <!-- ✅ TABLA + FILTROS -->
-    <div class="card" style="margin-top:16px; background:rgba(255,255,255,.03); border:1px solid rgba(255,255,255,.06)">
-      <h2 style="margin:0 0 6px; font-size:18px">Usuarios / Registros</h2>
-      <p class="sub" style="margin-top:0">Filtra por texto o por rango de fechas (creación/envío).</p>
+    <hr style="margin:30px 0">
 
-      <div class="filters">
-        <div class="f">
-          <label for="filterQ">Buscar (nombre / email / tel)</label>
-          <input id="filterQ" class="input" placeholder="Ej: ana / @gmail / 771..." maxlength="80" />
-        </div>
+    <h2>Usuarios / Registros</h2>
+    <p>Filtra por texto o por rango de fechas (creación/envío)</p>
 
-        <div class="f" style="min-width:170px; flex:0;">
-          <label for="filterFrom">Desde</label>
-          <input id="filterFrom" class="input" type="date" />
-        </div>
+    <div class="filters">
+      <input id="filterQ" placeholder="Buscar nombre / email / tel">
+      <input id="filterFrom" type="date">
+      <input id="filterTo" type="date">
 
-        <div class="f" style="min-width:170px; flex:0;">
-          <label for="filterTo">Hasta</label>
-          <input id="filterTo" class="input" type="date" />
-        </div>
+      <select id="filterLimit">
+        <option value="5">5</option>
+        <option value="10">10</option>
+        <option value="25">25</option>
+        <option value="50">50</option>
+      </select>
 
-        <div class="f" style="min-width:130px; flex:0;">
-          <label for="filterLimit">Límite</label>
-          <select id="filterLimit" class="input">
-            <option value="5" selected>5</option>
-            <option value="10">10</option>
-            <option value="25">25</option>
-            <option value="50">50</option>
-          </select>
-        </div>
-
-        <div class="f" style="min-width:160px; flex:0;">
-          <button id="btnApply" class="btn" type="button">Aplicar filtros</button>
-        </div>
-      </div>
-
-      <div style="display:flex; gap:10px; flex-wrap:wrap; margin:12px 0 12px">
-        <button id="btnRefresh" class="btn" type="button">Actualizar</button>
-        <button id="btnClear" class="btn" type="button">Limpiar filtros</button>
-        <button id="btnDump" class="btn" type="button">Descargar dump (JSON)</button>
-      </div>
-
-      <div id="apiStatus" class="sub" style="margin:6px 0 10px"></div>
-
-      <div style="overflow:auto">
-        <table style="width:100%; border-collapse:collapse; font-size:14px">
-          <thead>
-          <tr style="text-align:left; opacity:.9">
-            <th style="padding:8px 6px; border-bottom:1px solid rgba(255,255,255,.10)">ID</th>
-            <th style="padding:8px 6px; border-bottom:1px solid rgba(255,255,255,.10)">Nombre</th>
-            <th style="padding:8px 6px; border-bottom:1px solid rgba(255,255,255,.10)">Email</th>
-            <th style="padding:8px 6px; border-bottom:1px solid rgba(255,255,255,.10)">Tel</th>
-            <th style="padding:8px 6px; border-bottom:1px solid rgba(255,255,255,.10)">Fecha nac.</th>
-            <th style="padding:8px 6px; border-bottom:1px solid rgba(255,255,255,.10)">Creado</th>
-          </tr>
-          </thead>
-          <tbody id="apiTable"></tbody>
-        </table>
-      </div>
+      <button id="btnApply" class="btn btn-light" type="button">Aplicar filtros</button>
+      <button id="btnClear" class="btn btn-light" type="button">Limpiar</button>
+      <button id="btnDump" class="btn btn-light" type="button">Dump JSON</button>
     </div>
+
+    <table>
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Nombre</th>
+          <th>Email</th>
+          <th>Teléfono</th>
+          <th>Fecha Nac.</th>
+          <th>Creado</th>
+        </tr>
+      </thead>
+      <tbody id="apiTable"></tbody>
+    </table>
 
   </div>
 </main>
 
 <script src="/contact-api.js"></script>
+
 </body>
 </html>

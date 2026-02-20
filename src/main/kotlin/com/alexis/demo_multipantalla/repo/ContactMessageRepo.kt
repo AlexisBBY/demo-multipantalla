@@ -9,8 +9,6 @@ import java.time.Instant
 
 interface ContactMessageRepo : JpaRepository<ContactMessage, Long> {
 
-    fun findTop5ByOrderByIdDesc(): List<ContactMessage>
-
     @Query(
         """
         SELECT c FROM ContactMessage c
