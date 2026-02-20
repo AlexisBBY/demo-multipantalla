@@ -7,10 +7,8 @@
   <title>Formulario</title>
 
   <style>
-    /* Para que al dar click en el resumen, no quede tapado por navbar sticky */
     .row { scroll-margin-top: 95px; }
 
-    /* Estilo de error (si ya lo tienes en app.css, puedes quitarlo) */
     .err{
       margin-top: 8px;
       padding: 10px 12px;
@@ -22,7 +20,6 @@
     .err ul{ margin: 8px 0 0; padding-left: 18px; }
     .err a{ color: inherit; text-decoration: underline; }
 
-    /* Marca input con error (server-side) */
     .input.is-invalid{
       border: 1.5px solid #ff5a7a !important;
       outline: none;
@@ -70,7 +67,6 @@
       ✓ Enviado y guardado
     </div>
 
-    <!-- ✅ Resumen: SOLO después de enviar y fallar -->
     <div class="err" th:if="${showErrors} and ${#fields.hasErrors()}">
       <strong>Revisa estos campos:</strong>
       <ul>
@@ -82,7 +78,6 @@
       </ul>
     </div>
 
-    <!-- ✅ Error global (binding.reject(...)) SOLO después de enviar -->
     <div class="err"
          th:if="${showErrors} and ${#fields.hasGlobalErrors()}"
          th:each="e : ${#fields.globalErrors()}"
@@ -100,7 +95,6 @@
              th:name="${_csrf.parameterName}"
              th:value="${_csrf.token}"/>
 
-      <!-- NOMBRE -->
       <div class="row">
         <label for="fullName">Nombre completo</label>
         <input id="fullName"
@@ -113,11 +107,9 @@
                pattern="^[\p{L}][\p{L}\s'\-]{1,69}$"
                title="Solo letras, espacios, ' y -"
                required />
-        <!-- ✅ error debajo del campo (solo si showErrors) -->
         <div class="err" th:if="${showErrors} and ${#fields.hasErrors('fullName')}" th:errors="*{fullName}"></div>
       </div>
 
-      <!-- EMAIL -->
       <div class="row">
         <label for="email">Correo electrónico</label>
         <input id="email"
@@ -134,7 +126,6 @@
         <div class="err" th:if="${showErrors} and ${#fields.hasErrors('email')}" th:errors="*{email}"></div>
       </div>
 
-      <!-- TEL -->
       <div class="row">
         <label for="phone">Teléfono</label>
         <input id="phone"
@@ -150,7 +141,6 @@
         <div class="err" th:if="${showErrors} and ${#fields.hasErrors('phone')}" th:errors="*{phone}"></div>
       </div>
 
-      <!-- BIRTHDATE -->
       <div class="row">
         <label for="birthDate">Fecha de nacimiento</label>
         <input id="birthDate"
@@ -162,7 +152,6 @@
         <div class="err" th:if="${showErrors} and ${#fields.hasErrors('birthDate')}" th:errors="*{birthDate}"></div>
       </div>
 
-      <!-- MENSAJE -->
       <div class="row">
         <label for="message">Mensaje</label>
         <textarea id="message"
@@ -176,93 +165,42 @@
         <div class="err" th:if="${showErrors} and ${#fields.hasErrors('message')}" th:errors="*{message}"></div>
       </div>
 
-      <!-- Error de validación del cliente -->
       <div id="clientError" class="err" style="display:none;"></div>
 
       <button class="btn" type="submit">Enviar</button>
     </form>
 
+    <!-- ✅ Fetch API + Dump -->
+    <div class="card" style="margin-top:16px; background:rgba(255,255,255,.03); border:1px solid rgba(255,255,255,.06)">
+      <h2 style="margin:0 0 6px; font-size:18px">Fetch API + Dump</h2>
+      <p class="sub" style="margin-top:0">Últimos registros (vía <b>/api/contact</b>) y exportación JSON (dump).</p>
+
+      <div style="display:flex; gap:10px; flex-wrap:wrap; margin:10px 0 12px">
+        <button id="btnRefresh" class="btn" type="button">Actualizar lista</button>
+        <button id="btnDump" class="btn" type="button">Descargar dump (JSON)</button>
+      </div>
+
+      <div id="apiStatus" class="sub" style="margin:6px 0 10px"></div>
+
+      <div style="overflow:auto">
+        <table style="width:100%; border-collapse:collapse; font-size:14px">
+          <thead>
+          <tr style="text-align:left; opacity:.9">
+            <th style="padding:8px 6px; border-bottom:1px solid rgba(255,255,255,.10)">ID</th>
+            <th style="padding:8px 6px; border-bottom:1px solid rgba(255,255,255,.10)">Nombre</th>
+            <th style="padding:8px 6px; border-bottom:1px solid rgba(255,255,255,.10)">Email</th>
+            <th style="padding:8px 6px; border-bottom:1px solid rgba(255,255,255,.10)">Tel</th>
+            <th style="padding:8px 6px; border-bottom:1px solid rgba(255,255,255,.10)">Fecha nac.</th>
+          </tr>
+          </thead>
+          <tbody id="apiTable"></tbody>
+        </table>
+      </div>
+    </div>
+
   </div>
 </main>
 
-<script>
-  // Bloqueo de caracteres peligrosos en cliente (el server manda la seguridad real)
-  const form = document.getElementById('contactForm');
-  const clientError = document.getElementById('clientError');
-
-  function showClientError(msg){
-    if (!clientError) return;
-    clientError.textContent = msg;
-    clientError.style.display = 'block';
-  }
-  function clearClientError(){
-    if (!clientError) return;
-    clientError.textContent = '';
-    clientError.style.display = 'none';
-  }
-
-  function hasBadChars(s){
-    if (!s) return false;
-    if (s.includes('<') || s.includes('>')) return true;
-    return /[\u0000-\u001F\u007F]/.test(s);
-  }
-
-  function normalizeSpaces(s){
-    return (s || '').trim().replace(/\s+/g, ' ');
-  }
-
-  document.addEventListener('DOMContentLoaded', () => {
-    const fullName = document.getElementById('fullName');
-    const email = document.getElementById('email');
-    const phone = document.getElementById('phone');
-    const message = document.getElementById('message');
-
-    [fullName, email, phone, message].forEach(el => {
-      if (!el) return;
-
-      el.addEventListener('input', () => {
-        clearClientError();
-        el.value = el.value.replace(/[\u0000-\u001F\u007F]/g, '');
-      });
-
-      el.addEventListener('blur', () => {
-        el.value = normalizeSpaces(el.value);
-      });
-
-      el.addEventListener('paste', (e) => {
-        const text = (e.clipboardData || window.clipboardData).getData('text');
-        if (hasBadChars(text)) {
-          e.preventDefault();
-          showClientError("No se permiten etiquetas HTML ni caracteres extraños.");
-        }
-      });
-    });
-
-    if (form) {
-      form.addEventListener('submit', (e) => {
-        clearClientError();
-
-        const values = [
-          fullName?.value || '',
-          email?.value || '',
-          phone?.value || '',
-          message?.value || ''
-        ];
-
-        if (values.some(hasBadChars)) {
-          e.preventDefault();
-          showClientError("No se permiten etiquetas HTML ni caracteres extraños.");
-          return;
-        }
-
-        if (!form.checkValidity()) {
-          e.preventDefault();
-          showClientError("Revisa los campos: formato inválido o faltan datos.");
-        }
-      });
-    }
-  });
-</script>
-
+<script src="/contact-api.js"></script>
 </body>
 </html>
