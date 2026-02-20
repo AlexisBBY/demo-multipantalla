@@ -12,7 +12,7 @@ class ContactMessage(
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     var id: Long? = null,
 
-    @Column(nullable = false, length = 70)
+    @Column(name = "full_name", nullable = false, length = 70)
     var fullName: String = "",
 
     @Column(nullable = false, length = 254)
@@ -21,12 +21,12 @@ class ContactMessage(
     @Column(nullable = false, length = 20)
     var phone: String = "",
 
-    @Column(nullable = false)
+    @Column(name = "birth_date", nullable = false)
     var birthDate: LocalDate = LocalDate.now(),
 
     @Column(nullable = false, length = 500)
     var message: String = "",
 
-    @Column(nullable = false)
+    @Column(name = "created_at", nullable = false)
     var createdAt: Instant = Instant.now()
 )
