@@ -24,6 +24,23 @@
       border: 1.5px solid #ff5a7a !important;
       outline: none;
     }
+
+    /* mini layout para filtros */
+    .filters{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      align-items:flex-end;
+      margin-top:10px;
+    }
+    .filters .f{
+      display:flex;
+      flex-direction:column;
+      gap:6px;
+      min-width:160px;
+      flex:1;
+    }
+    .filters label{ font-size:13px; opacity:.9; }
   </style>
 </head>
 <body>
@@ -170,13 +187,45 @@
       <button class="btn" type="submit">Enviar</button>
     </form>
 
-    <!-- ✅ Fetch API + Dump -->
+    <!-- ✅ TABLA + FILTROS -->
     <div class="card" style="margin-top:16px; background:rgba(255,255,255,.03); border:1px solid rgba(255,255,255,.06)">
-      <h2 style="margin:0 0 6px; font-size:18px">Fetch API + Dump</h2>
-      <p class="sub" style="margin-top:0">Últimos registros (vía <b>/api/contact</b>) y exportación JSON (dump).</p>
+      <h2 style="margin:0 0 6px; font-size:18px">Usuarios / Registros</h2>
+      <p class="sub" style="margin-top:0">Filtra por texto o por rango de fechas (creación/envío).</p>
 
-      <div style="display:flex; gap:10px; flex-wrap:wrap; margin:10px 0 12px">
-        <button id="btnRefresh" class="btn" type="button">Actualizar lista</button>
+      <div class="filters">
+        <div class="f">
+          <label for="filterQ">Buscar (nombre / email / tel)</label>
+          <input id="filterQ" class="input" placeholder="Ej: ana / @gmail / 771..." maxlength="80" />
+        </div>
+
+        <div class="f" style="min-width:170px; flex:0;">
+          <label for="filterFrom">Desde</label>
+          <input id="filterFrom" class="input" type="date" />
+        </div>
+
+        <div class="f" style="min-width:170px; flex:0;">
+          <label for="filterTo">Hasta</label>
+          <input id="filterTo" class="input" type="date" />
+        </div>
+
+        <div class="f" style="min-width:130px; flex:0;">
+          <label for="filterLimit">Límite</label>
+          <select id="filterLimit" class="input">
+            <option value="5" selected>5</option>
+            <option value="10">10</option>
+            <option value="25">25</option>
+            <option value="50">50</option>
+          </select>
+        </div>
+
+        <div class="f" style="min-width:160px; flex:0;">
+          <button id="btnApply" class="btn" type="button">Aplicar filtros</button>
+        </div>
+      </div>
+
+      <div style="display:flex; gap:10px; flex-wrap:wrap; margin:12px 0 12px">
+        <button id="btnRefresh" class="btn" type="button">Actualizar</button>
+        <button id="btnClear" class="btn" type="button">Limpiar filtros</button>
         <button id="btnDump" class="btn" type="button">Descargar dump (JSON)</button>
       </div>
 
@@ -191,6 +240,7 @@
             <th style="padding:8px 6px; border-bottom:1px solid rgba(255,255,255,.10)">Email</th>
             <th style="padding:8px 6px; border-bottom:1px solid rgba(255,255,255,.10)">Tel</th>
             <th style="padding:8px 6px; border-bottom:1px solid rgba(255,255,255,.10)">Fecha nac.</th>
+            <th style="padding:8px 6px; border-bottom:1px solid rgba(255,255,255,.10)">Creado</th>
           </tr>
           </thead>
           <tbody id="apiTable"></tbody>

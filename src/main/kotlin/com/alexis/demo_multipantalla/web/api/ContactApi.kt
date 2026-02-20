@@ -2,15 +2,13 @@ package com.alexis.demo_multipantalla.web.api
 
 import com.alexis.demo_multipantalla.domain.ContactMessage
 import com.alexis.demo_multipantalla.repo.ContactMessageRepo
+import org.springframework.data.domain.PageRequest
 import org.springframework.http.HttpHeaders
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 import java.nio.charset.StandardCharsets
-import java.time.Instant
-import java.time.LocalDate
-import java.time.Period
-import java.time.ZoneId
+import java.time.*
 import java.time.format.DateTimeFormatter
 
 @RestController
@@ -25,15 +23,36 @@ class ContactApi(
     private val PHONE_REGEX = Regex("""^[0-9+\-\s()]{7,20}$""")
     private val MAX_MESSAGE = 500
 
-    // ✅ GET /api/contact?limit=5
+    /**
+     * ✅ GET /api/contact
+     * Filtros:
+     * - q: texto (nombre/email/teléfono)
+     * - from: yyyy-MM-dd (createdAt >= inicio de ese día)
+     * - to: yyyy-MM-dd (createdAt < inicio del día siguiente)  -> incluye el día "to"
+     * - limit: default 5
+     * - offset: default 0 (para paginar si quieres)
+     */
     @GetMapping(produces = [MediaType.APPLICATION_JSON_VALUE])
-    fun list(@RequestParam("limit", required = false) limit: Int?): List<ContactMessageDto> {
-        val items = when {
-            limit == null -> repo.findAll().sortedByDescending { it.id ?: 0L }
-            limit <= 0 -> emptyList()
-            limit <= 5 -> repo.findTop5ByOrderByIdDesc().take(limit)
-            else -> repo.findAll().sortedByDescending { it.id ?: 0L }.take(limit)
-        }
+    fun list(
+        @RequestParam("q", required = false) q: String?,
+        @RequestParam("from", required = false) from: String?,
+        @RequestParam("to", required = false) to: String?,
+        @RequestParam("limit", required = false) limit: Int?,
+        @RequestParam("offset", required = false) offset: Int?
+    ): List<ContactMessageDto> {
+
+        val safeLimit = (limit ?: 5).coerceIn(1, 100)
+        val safeOffset = (offset ?: 0).coerceAtLeast(0)
+
+        val fromTs = parseDateToStartInstant(from)
+        val toTsExclusive = parseDateToNextDayStartInstant(to)
+
+        // pageable: offset en páginas (simple)
+        val page = safeOffset / safeLimit
+        val pageable = PageRequest.of(page, safeLimit)
+
+        val items = repo.search(q?.trim(), fromTs, toTsExclusive, pageable)
+
         return items.map { it.toDto() }
     }
 
@@ -48,29 +67,23 @@ class ContactApi(
 
         val errors = linkedMapOf<String, String>()
 
-        // Anti-HTML chars
         if (containsHtmlLike(fullName) || containsHtmlLike(email) || containsHtmlLike(phone) || containsHtmlLike(message)) {
             errors["global"] = "No se permiten etiquetas HTML ni caracteres extraños."
         }
-
         if (fullName.isBlank() || !NAME_REGEX.matches(fullName)) {
             errors["fullName"] = "Nombre inválido (solo letras y espacios)."
         }
-
         if (email.isBlank() || !EMAIL_REGEX.matches(email)) {
             errors["email"] = "Email inválido (ej: usuario@dominio.com.mx)."
         }
-
         if (phone.isBlank() || !PHONE_REGEX.matches(phone)) {
             errors["phone"] = "Teléfono inválido (usa números y + - ( ))."
         }
-
         if (message.isBlank()) {
             errors["message"] = "Escribe un mensaje."
         } else if (message.length > MAX_MESSAGE) {
             errors["message"] = "El mensaje no debe pasar de $MAX_MESSAGE caracteres."
         }
-
         if (birthDate == null) {
             errors["birthDate"] = "La fecha de nacimiento es obligatoria."
         } else {
@@ -98,7 +111,7 @@ class ContactApi(
         return ResponseEntity.status(201).body(mapOf("ok" to true, "item" to saved.toDto()))
     }
 
-    // ✅ GET /api/contact/dump -> descarga JSON
+    // ✅ GET /api/contact/dump -> descarga TODO (sin filtros)
     @GetMapping("/dump", produces = [MediaType.APPLICATION_JSON_VALUE])
     fun dump(): ResponseEntity<ByteArray> {
         val items = repo.findAll().sortedByDescending { it.id ?: 0L }.map { it.toDto() }
@@ -151,13 +164,27 @@ class ContactApi(
         return noCtrl.trim().replace(Regex("""\s+"""), " ")
     }
 
-    private fun containsHtmlLike(s: String): Boolean {
-        if (s.contains('<') || s.contains('>')) return true
-        if (s.contains('\u0000')) return true
-        return false
+    private fun containsHtmlLike(s: String): Boolean =
+        s.contains('<') || s.contains('>') || s.contains('\u0000')
+
+    private fun parseDateToStartInstant(dateStr: String?): Instant? {
+        if (dateStr.isNullOrBlank()) return null
+        return runCatching {
+            val d = LocalDate.parse(dateStr.trim())
+            d.atStartOfDay(ZoneId.systemDefault()).toInstant()
+        }.getOrNull()
     }
 
-    // JSON simple (sin dependencias extra)
+    // Incluye el día "to" completo: usamos < inicio del día siguiente
+    private fun parseDateToNextDayStartInstant(dateStr: String?): Instant? {
+        if (dateStr.isNullOrBlank()) return null
+        return runCatching {
+            val d = LocalDate.parse(dateStr.trim()).plusDays(1)
+            d.atStartOfDay(ZoneId.systemDefault()).toInstant()
+        }.getOrNull()
+    }
+
+    // JSON simple sin dependencias extra
     private fun toJson(items: List<ContactMessageDto>): String {
         fun esc(s: String) = s
             .replace("\\", "\\\\")

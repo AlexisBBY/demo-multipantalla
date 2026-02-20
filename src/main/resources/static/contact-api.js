@@ -4,8 +4,16 @@
 
   const apiTable = document.getElementById('apiTable');
   const apiStatus = document.getElementById('apiStatus');
+
   const btnRefresh = document.getElementById('btnRefresh');
   const btnDump = document.getElementById('btnDump');
+  const btnApply = document.getElementById('btnApply');
+  const btnClear = document.getElementById('btnClear');
+
+  const filterQ = document.getElementById('filterQ');
+  const filterFrom = document.getElementById('filterFrom');
+  const filterTo = document.getElementById('filterTo');
+  const filterLimit = document.getElementById('filterLimit');
 
   if (!form) return;
 
@@ -50,6 +58,18 @@
       .replaceAll("'", '&#39;');
   }
 
+  function formatInstant(iso) {
+    // iso: "2026-02-19T..."
+    try {
+      const d = new Date(iso);
+      if (isNaN(d.getTime())) return iso;
+      return d.toLocaleString();
+    } catch {
+      return iso;
+    }
+  }
+
+  // Limpieza (cliente)
   [fullName, email, phone, message].forEach(el => {
     if (!el) return;
 
@@ -71,12 +91,33 @@
     });
   });
 
+  function buildListUrl() {
+    const params = new URLSearchParams();
+    const q = (filterQ?.value || '').trim();
+    const from = (filterFrom?.value || '').trim();
+    const to = (filterTo?.value || '').trim();
+    const limit = (filterLimit?.value || '5').trim();
+
+    if (q) params.set('q', q);
+    if (from) params.set('from', from);
+    if (to) params.set('to', to);
+    if (limit) params.set('limit', limit);
+
+    const qs = params.toString();
+    return '/api/contact' + (qs ? `?${qs}` : '');
+  }
+
   async function refreshList() {
     if (!apiTable) return;
+
     try {
+      clearClientError();
       setStatus('Cargando lista...');
-      const res = await fetch('/api/contact?limit=5', { headers: { 'Accept': 'application/json' } });
+
+      const url = buildListUrl();
+      const res = await fetch(url, { headers: { 'Accept': 'application/json' } });
       if (!res.ok) throw new Error('No se pudo cargar la lista');
+
       const items = await res.json();
 
       apiTable.innerHTML = '';
@@ -88,6 +129,7 @@
           <td style="padding:8px 6px; border-bottom:1px solid rgba(255,255,255,.08)">${escapeHtml(it.email)}</td>
           <td style="padding:8px 6px; border-bottom:1px solid rgba(255,255,255,.08)">${escapeHtml(it.phone)}</td>
           <td style="padding:8px 6px; border-bottom:1px solid rgba(255,255,255,.08)">${escapeHtml(it.birthDate)}</td>
+          <td style="padding:8px 6px; border-bottom:1px solid rgba(255,255,255,.08)">${escapeHtml(formatInstant(it.createdAt))}</td>
         `;
         apiTable.appendChild(tr);
       });
@@ -99,13 +141,21 @@
     }
   }
 
-  if (btnRefresh) {
-    btnRefresh.addEventListener('click', () => {
-      clearClientError();
+  // Botones de filtros
+  if (btnApply) btnApply.addEventListener('click', refreshList);
+  if (btnRefresh) btnRefresh.addEventListener('click', refreshList);
+
+  if (btnClear) {
+    btnClear.addEventListener('click', () => {
+      if (filterQ) filterQ.value = '';
+      if (filterFrom) filterFrom.value = '';
+      if (filterTo) filterTo.value = '';
+      if (filterLimit) filterLimit.value = '5';
       refreshList();
     });
   }
 
+  // Dump
   if (btnDump) {
     btnDump.addEventListener('click', async () => {
       try {
@@ -137,6 +187,7 @@
     });
   }
 
+  // Submit por Fetch API
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
     clearClientError();
@@ -203,5 +254,6 @@
     }
   });
 
+  // Auto-load
   refreshList();
 })();
