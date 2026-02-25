@@ -94,31 +94,32 @@
     <h1>Formulario</h1>
     <p class="sub">Todos los campos son obligatorios</p>
 
-    <form id="contactForm" method="post" autocomplete="off">
+    <!-- Formulario para enviar los datos -->
+    <form id="contactForm" action="/contact" method="POST" autocomplete="off">
 
       <div class="row">
         <label>Nombre completo</label>
-        <input id="fullName" class="input" maxlength="70" required />
+        <input id="fullName" name="fullName" class="input" maxlength="70" required />
       </div>
 
       <div class="row">
         <label>Correo electrónico</label>
-        <input id="email" type="email" class="input" required />
+        <input id="email" name="email" type="email" class="input" required />
       </div>
 
       <div class="row">
         <label>Teléfono</label>
-        <input id="phone" class="input" required />
+        <input id="phone" name="phone" class="input" required />
       </div>
 
       <div class="row">
         <label>Fecha de nacimiento</label>
-        <input id="birthDate" type="date" class="input" required />
+        <input id="birthDate" name="birthDate" type="date" class="input" required />
       </div>
 
       <div class="row">
         <label>Mensaje</label>
-        <textarea id="message" rows="4" class="input" required></textarea>
+        <textarea id="message" name="message" rows="4" class="input" required></textarea>
       </div>
 
       <div id="clientError" class="err" style="display:none;"></div>

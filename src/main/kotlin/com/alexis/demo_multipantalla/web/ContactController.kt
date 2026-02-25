@@ -28,7 +28,7 @@ class ContactController(
 
     @GetMapping
     fun view(model: Model): String {
-        // ✅ Al abrir por primera vez, NO mostramos errores
+        // Al abrir por primera vez, NO mostramos errores
         model.addAttribute("showErrors", false)
         model.addAttribute("contactForm", ContactForm())
         return "contact"
@@ -84,7 +84,7 @@ class ContactController(
         }
 
         if (binding.hasErrors()) {
-            // ✅ Solo si el usuario intentó enviar y falló
+            // Solo si el usuario intentó enviar y falló
             model.addAttribute("showErrors", true)
             return "contact"
         }

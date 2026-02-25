@@ -37,4 +37,28 @@ class ContactApi(
         // Llamar al repositorio para obtener los registros filtrados
         return repo.search(q, fromTs, toTs, PageRequest.of(0, safeLimit))
     }
+
+    // Método para crear un nuevo contacto (envío de formulario o fetch POST)
+    @PostMapping
+    fun create(@RequestBody dto: ContactCreateDto): ContactMessage {
+        val entity = ContactMessage(
+            id = null,
+            fullName = dto.fullName.trim(),
+            email = dto.email.trim(),
+            phone = dto.phone.trim(),
+            birthDate = dto.birthDate,
+            message = dto.message.trim(),
+            createdAt = Instant.now()
+        )
+        return repo.save(entity)
+    }
+
+    // DTO para la creación de un nuevo contacto
+    data class ContactCreateDto(
+        val fullName: String,
+        val email: String,
+        val phone: String,
+        val birthDate: String,
+        val message: String
+    )
 }
